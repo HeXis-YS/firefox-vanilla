@@ -27,7 +27,7 @@ install -v $REPO_DIR/mozconfig-$1 $WORK_DIR/firefox/mozconfig
 
 case "$1" in
   windows|linux)
-    hg clone --stream --noupdate --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "firefox-l10n"
+    hg clone --stream --noupdate --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "zh-CN"
     python mach --no-interactive bootstrap --application-choice browser
     ;;
   android)

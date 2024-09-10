@@ -25,9 +25,6 @@ case "$1" in
     ./gradlew assembleRelease
     popd
     ;;
-  *)
-    exit 1
-    ;;
 esac
 
 popd
