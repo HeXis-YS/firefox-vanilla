@@ -1,5 +1,5 @@
 XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
-XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto,+ssbs"
+XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
 # ac_add_options --enable-lto=cross,full
 # ac_add_options --enable-profile-use=cross
 # ac_add_options --with-pgo-jarlog=en-US.log
