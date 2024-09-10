@@ -1,11 +1,11 @@
 # Enable PGO
 ac_add_options MOZ_PGO=1
 if test "$MOZ_PROFILE_GENERATE"; then
-    XARCH_CFLAGS="-mcpu=native -mtune=native"
+    XARCH_CFLAGS="-march=native -mtune=native"
     XARCH_RUSTFLAGS="-C target-cpu=native"
     ac_add_options --enable-profile-generate=cross
 else 
-    XARCH_CFLAGS="-mcpu=native -mtune=znver4"
+    XARCH_CFLAGS="-march=native -mtune=znver4"
     XARCH_RUSTFLAGS="-C target-cpu=znver4"
     ac_add_options --enable-lto=cross,full
     if test "$MOZ_PROFILE_USE"; then
@@ -68,12 +68,9 @@ ac_add_options --without-wasm-sandboxed-libraries
 
 # Disable Modules
 ac_add_options --disable-accessibility
-ac_add_options --disable-bits-download
 ac_add_options --disable-crashreporter
 ac_add_options --disable-dmd
-ac_add_options --disable-maintenance-service
 ac_add_options --disable-parental-controls
-ac_add_options --disable-update-agent
 ac_add_options --disable-updater
 ac_add_options --disable-synth-speechd
 ac_add_options --disable-webspeech
@@ -113,3 +110,8 @@ export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
 export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
 export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
 # export VERBOSE=1
+
+# Incompatible
+# ac_add_options --disable-bits-download
+# ac_add_options --disable-maintenance-service
+# ac_add_options --disable-update-agent
