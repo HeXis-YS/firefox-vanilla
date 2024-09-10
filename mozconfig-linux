@@ -1,0 +1,115 @@
+# Enable PGO
+ac_add_options MOZ_PGO=1
+if test "$MOZ_PROFILE_GENERATE"; then
+    XARCH_CFLAGS="-mcpu=native -mtune=native"
+    XARCH_RUSTFLAGS="-C target-cpu=native"
+    ac_add_options --enable-profile-generate=cross
+else 
+    XARCH_CFLAGS="-mcpu=native -mtune=znver4"
+    XARCH_RUSTFLAGS="-C target-cpu=znver4"
+    ac_add_options --enable-lto=cross,full
+    if test "$MOZ_PROFILE_USE"; then
+        ac_add_options --enable-profile-use=cross
+        # ac_add_options --with-pgo-jarlog=en-US.log
+        # ac_add_options --with-pgo-profile-path=merged.profdata
+    fi
+fi
+
+XWARNING_CFLAGS="-Wno-unused-command-line-argument"
+XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
+XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -mllvm -enable-ext-tsp-block-placement=1"
+XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -fuse-ld=mold -s -Wl,-O3,--as-needed,--gc-sections,--icf=all,-z,lazy,-z,norelro,-z,execstack,-sort-common"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
+
+# Build Configs
+ac_add_options --enable-application=browser
+ac_add_options --disable-artifact-builds
+ac_add_options --enable-bootstrap
+ac_add_options --enable-linker=mold
+
+# # Set -Copt-level=3
+# ac_add_options OPT_LEVEL=3
+# export OPT_LEVEL=3
+# ac_add_options RUSTC_OPT_LEVEL=3
+# export RUSTC_OPT_LEVEL=3
+
+# Disable debug & tests
+ac_add_options --disable-debug
+ac_add_options --disable-debug-js-modules
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-fuzzing
+ac_add_options --disable-profiling
+ac_add_options --disable-rust-debug
+ac_add_options --disable-tests
+ac_add_options --disable-gtest-in-build
+
+# Optimization settings
+ac_add_options --enable-release
+ac_add_options --enable-strip
+ac_add_options --enable-install-strip
+ac_add_options --enable-minify=properties
+ac_add_options --enable-clang-plugin
+ac_add_options --enable-jemalloc
+ac_add_options --enable-optimize="${XCFLAGS}"
+ac_add_options --enable-rust-simd
+ac_add_options --enable-wasm-memory64
+ac_add_options --enable-wasm-memory-control
+ac_add_options --enable-wasm-multi-memory
+ac_add_options --enable-wasm-simd
+ac_add_options --enable-wasm-relaxed-simd
+ac_add_options --enable-wasm-avx
+export MOZ_OPTIMIZE=1
+export STRIP_CFLAGS="--strip-debug --strip-unneeded"
+
+# Security
+ac_add_options --disable-hardening
+ac_add_options --disable-sandbox
+ac_add_options --without-wasm-sandboxed-libraries
+
+# Disable Modules
+ac_add_options --disable-accessibility
+ac_add_options --disable-bits-download
+ac_add_options --disable-crashreporter
+ac_add_options --disable-dmd
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-parental-controls
+ac_add_options --disable-update-agent
+ac_add_options --disable-updater
+ac_add_options --disable-synth-speechd
+ac_add_options --disable-webspeech
+ac_add_options --disable-webspeechtestbackend
+ac_add_options --disable-valgrind
+
+# Media settings
+ac_add_options --enable-av1
+ac_add_options --enable-eme=widevine
+ac_add_options --enable-jxl
+ac_add_options --enable-raw
+ac_add_options --enable-webrtc
+
+# Client settings
+mk_add_options MOZ_CRASHREPORTER=0
+mk_add_options MOZ_DATA_REPORTING=0
+mk_add_options MOZ_SERVICES_HEALTHREPORT=0
+mk_add_options MOZ_TELEMETRY_REPORTING=0
+
+# API Keys
+ac_add_options --with-google-location-service-api-keyfile=@TOPSRCDIR@/ga
+ac_add_options --with-google-safebrowsing-api-keyfile=@TOPSRCDIR@/ga
+
+# Branding
+export MOZILLA_OFFICIAL=1
+ac_add_options --enable-official-branding
+
+# Make flags
+mk_add_options AUTOCLOBBER=1
+mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
+mk_add_options MOZ_PARALLEL_COMPILE=1
+
+# Compiler, Linker, and Rust flags
+export CFLAGS="${CFLAGS} ${XCFLAGS}"
+# export CPPFLAGS="${CPPFLAGS} ${XCFLAGS}"
+export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
+export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
+export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
+# export VERBOSE=1
