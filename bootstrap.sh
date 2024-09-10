@@ -14,6 +14,7 @@ if [[ "$(uname)" == "Linux" ]]; then
   unset CFLAGS CXXFLAGS LDFLAGS
 fi
 
+cd "$WORK_DIR"
 hg clone --stream --noupdate --config format.generaldelta=true "https://hg.mozilla.org/releases/mozilla-esr128" "firefox"
 pushd firefox
 hg update --clean --config extensions.fsmonitor= "FIREFOX_128_2_0esr_RELEASE"
