@@ -26,7 +26,7 @@ pushd firefox
 hg update --clean --config extensions.fsmonitor= "${BUILD_TAG}"
 watchman shutdown-server
 patch -p1 -N < "${PATCHES_DIR}/${BUILD_TAG}.diff"
-install -v "${MOZCONFIGS_DIR}/mozconfig-$1" "${WORK_DIR}/firefox/mozconfig"
+install -v "${MOZCONFIGS_DIR}/$1" "${WORK_DIR}/firefox/mozconfig"
 
 case "$1" in
   windows|linux)
