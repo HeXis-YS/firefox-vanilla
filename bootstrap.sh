@@ -1,6 +1,8 @@
 #!/bin/bash
 source "$(dirname "$0")/paths.sh"
 
+readonly BUILD_TAG="FIREFOX_128_2_0esr_RELEASE"
+
 if [[ "$1" != "windows" && "$1" != "linux" && "$!" != "android" ]]; then
     exit 1
 fi
@@ -18,18 +20,18 @@ if [[ "$(uname)" == "Linux" ]]; then
   unset CFLAGS CXXFLAGS LDFLAGS
 fi
 
-cd "$WORK_DIR"
+cd "${WORK_DIR}"
 hg clone --stream --noupdate --config format.generaldelta=true "https://hg.mozilla.org/releases/mozilla-esr128" "firefox"
 pushd firefox
-hg update --clean --config extensions.fsmonitor= "FIREFOX_128_2_0esr_RELEASE"
+hg update --clean --config extensions.fsmonitor= "${BUILD_TAG}"
 watchman shutdown-server
-
-install -v $REPO_DIR/mozconfig-$1 $WORK_DIR/firefox/mozconfig
+patch -p1 -N < "${PATCHES_DIR}/${BUILD_TAG}.diff"
+install -v "${MOZCONFIGS_DIR}/mozconfig-$1" "${WORK_DIR}/firefox/mozconfig"
 
 case "$1" in
   windows|linux)
     python mach --no-interactive bootstrap --application-choice browser
-    hg clone --stream --noupdate --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "~/.mozbuild/zh-CN"
+    hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "${MOZBUILD_DIR}/l10n-central/zh-CN)"
     watchman shutdown-server
     ;;
   android)

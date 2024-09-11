@@ -5,7 +5,7 @@ if test "$MOZ_PROFILE_GENERATE"; then
     XARCH_RUSTFLAGS="-C target-cpu=native"
     ac_add_options --enable-profile-generate=cross
 else 
-    XARCH_CFLAGS="/clang:-march=native /clang:-mtune=znver4"
+    XARCH_CFLAGS="/clang:-march=native /clang:-mtune=znver4 /clang:-maes"
     XARCH_RUSTFLAGS="-C target-cpu=znver4"
     ac_add_options --enable-lto=cross,full
     if test "$MOZ_PROFILE_USE"; then
@@ -16,9 +16,8 @@ else
 fi
 
 XMSVC_CFLAGS="-O2 -Ob2 -Oi -Ot -Oy -GF -GS- -guard:cf- -guard:ehcont- -Gr -Gw -Gy"
-XCLANG_CFLAGS="${XARCH_CFLAGS} /clang:-O3 /clang:-fno-semantic-interposition /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-fno-stack-clash-protection /clang:-ffp-contract=fast -fcf-protection=none -mllvm -enable-ext-tsp-block-placement=1"
-XWARNING_CFLAGS="/clang:-Wno-unused-command-line-argument"
-XCFLAGS="${XWARNING_CFLAGS} ${XMSVC_CFLAGS} ${XCLANG_CFLAGS}"
+XCLANG_CFLAGS="${XARCH_CFLAGS} /clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-ffp-contract=fast -fcf-protection=none -mllvm -enable-ext-tsp-block-placement=1"
+XCFLAGS="${XMSVC_CFLAGS} ${XCLANG_CFLAGS}"
 XLDFLAGS="/OPT:REF,ICF"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
