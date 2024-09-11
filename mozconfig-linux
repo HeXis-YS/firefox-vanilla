@@ -26,6 +26,7 @@ ac_add_options --enable-application=browser
 ac_add_options --disable-artifact-builds
 ac_add_options --enable-bootstrap
 ac_add_options --enable-linker=mold
+ac_add_options --with-ccache=sccache
 
 # # Set -Copt-level=3
 # ac_add_options OPT_LEVEL=3

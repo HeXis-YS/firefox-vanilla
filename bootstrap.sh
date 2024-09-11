@@ -22,13 +22,15 @@ cd "$WORK_DIR"
 hg clone --stream --noupdate --config format.generaldelta=true "https://hg.mozilla.org/releases/mozilla-esr128" "firefox"
 pushd firefox
 hg update --clean --config extensions.fsmonitor= "FIREFOX_128_2_0esr_RELEASE"
+watchman shutdown-server
 
 install -v $REPO_DIR/mozconfig-$1 $WORK_DIR/firefox/mozconfig
 
 case "$1" in
   windows|linux)
-    hg clone --stream --noupdate --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "zh-CN"
     python mach --no-interactive bootstrap --application-choice browser
+    hg clone --stream --noupdate --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "~/.mozbuild/zh-CN"
+    watchman shutdown-server
     ;;
   android)
     python mach --no-interactive bootstrap --application-choice mobile_android

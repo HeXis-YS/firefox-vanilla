@@ -9,6 +9,7 @@ pushd $WORK_DIR/firefox
 
 python mach configure
 python mach build
+~/.mozbuild/sccache/sccache --stop-server
 
 case "$1" in
   windows|linux)
