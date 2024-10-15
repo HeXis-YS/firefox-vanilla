@@ -20,14 +20,3 @@ diff -u a/build/moz.configure/lto-pgo.configure b/build/moz.configure/lto-pgo.co
  
      # If we're using the new pass manager, we can also enable the new PM
      # during LTO. Further we can use the resulting size savings to increase
-diff -u a/build/pgo/profileserver.py b/build/pgo/profileserver.py
---- a/build/pgo/profileserver.py	2024-09-11 08:43:08.816200000 +0000
-+++ b/build/pgo/profileserver.py	2024-09-11 09:27:43.339606000 +0000
-@@ -234,6 +234,7 @@
-             merge_cmd = [
-                 llvm_profdata,
-                 "merge",
-+                "--sparse=true",
-                 "-o",
-                 merged_profdata,
-             ] + profraw_files

@@ -92,6 +92,7 @@ if __name__ == "__main__":
         ),
     )
     sp3_httpd.start(block=False)
+    print("started SP3 server on port 8000")
 
     mm_httpd = MozHttpd(
         port=8001,
@@ -100,6 +101,7 @@ if __name__ == "__main__":
         ),
     )
     mm_httpd.start(block=False)
+    print("started MM server on port 8001")
 
     js_httpd = MozHttpd(
         port=8002,
@@ -108,13 +110,10 @@ if __name__ == "__main__":
         ),
     )
     js_httpd.start(block=False)
-    print("started SP3 server on port 8000")
+    print("started JS server on port 8002")
+
     locations = ServerLocations()
     locations.add_host(host="127.0.0.1", port=PORT, options="primary,privileged")
-
-    old_profraw_files = glob.glob("*.profraw")
-    for f in old_profraw_files:
-        os.remove(f)
 
     with TemporaryDirectory() as profilePath:
         # TODO: refactor this into mozprofile
@@ -199,6 +198,10 @@ if __name__ == "__main__":
             get_crashreports(profilePath, name="Profile initialization")
             sys.exit(ret)
 
+        old_profraw_files = glob.glob("*.profraw")
+        for f in old_profraw_files:
+            os.remove(f)
+
         jarlog = os.getenv("JARLOG_FILE")
         if jarlog:
             env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
@@ -220,8 +223,10 @@ if __name__ == "__main__":
         )
         runner.start(debug_args=debug_args, interactive=interactive)
         ret = runner.wait()
-        sp3_httpd.stop()
         httpd.stop()
+        sp3_httpd.stop()
+        mm_httpd.stop()
+        js_httpd.stop()
         if ret:
             print("Firefox exited with code %d during profiling" % ret)
             logfile = process_args.get("logfile")
@@ -253,6 +258,7 @@ if __name__ == "__main__":
             merge_cmd = [
                 llvm_profdata,
                 "merge",
+                "--sparse=true",
                 "-o",
                 merged_profdata,
             ] + profraw_files

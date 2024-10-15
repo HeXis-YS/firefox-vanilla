@@ -13,7 +13,7 @@ fi
 
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
 XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS}"
-XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -fuse-ld=lld -s -Wl,-O2"
+XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -s -Wl,-O2"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
 # Build Configs

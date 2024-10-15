@@ -88,7 +88,11 @@
   function loadURL() {
     var interval = defaultInterval;
     var testURL = list[idx++];
-    if (testURL.includes("webkit") || testURL.includes("localhost")) {
+    if (testURL.includes("localhost:8001")) {
+      interval = 380000;
+    } else if (testURL.includes("localhost:8002")) {
+      interval = 150000;
+    } else if (testURL.includes("webaudio") || testURL.includes("localhost")) {
       interval = 120000;
     }
     w.close();

@@ -23,16 +23,11 @@ from mozharness.mozilla.mozbase import MozbaseMixin
 from mozharness.mozilla.testing.android import AndroidMixin
 from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
 
-SP3_PAGES = [
-    "index.html?startAutomatically=true",
-]
-
 PAGES = [
-    "js-input/webkit/PerformanceTests/Speedometer/index.html",
-    "blueprint/sample.html",
+    "blueprint/elements.html",
     "blueprint/forms.html",
     "blueprint/grid.html",
-    "blueprint/elements.html",
+    "blueprint/sample.html",
     "js-input/3d-thingy.html",
     "js-input/crypto-otp.html",
     "js-input/sunspider/3d-cube.html",
@@ -61,6 +56,41 @@ PAGES = [
     "js-input/sunspider/string-tagcloud.html",
     "js-input/sunspider/string-unpack-code.html",
     "js-input/sunspider/string-validate-input.html",
+    "talos/tests/perf-reftest-singletons/abspos-reflow-1.html",
+    "talos/tests/perf-reftest-singletons/attr-selector-1.html",
+    "talos/tests/perf-reftest-singletons/bidi-resolution-1.html",
+    "talos/tests/perf-reftest-singletons/bloom-basic-2.html",
+    "talos/tests/perf-reftest-singletons/bloom-basic.html",
+    "talos/tests/perf-reftest-singletons/coalesce-1.html",
+    "talos/tests/perf-reftest-singletons/coalesce-2.html",
+    "talos/tests/perf-reftest-singletons/display-none-1.html",
+    "talos/tests/perf-reftest-singletons/external-string-pass.html",
+    "talos/tests/perf-reftest-singletons/getElementById-1.html",
+    "talos/tests/perf-reftest-singletons/id-getter-1.html",
+    "talos/tests/perf-reftest-singletons/id-getter-2.html",
+    "talos/tests/perf-reftest-singletons/id-getter-3.html",
+    "talos/tests/perf-reftest-singletons/id-getter-4.html",
+    "talos/tests/perf-reftest-singletons/id-getter-5.html",
+    "talos/tests/perf-reftest-singletons/id-getter-6.html",
+    "talos/tests/perf-reftest-singletons/id-getter-7.html",
+    "talos/tests/perf-reftest-singletons/inline-style-cache-1.html",
+    "talos/tests/perf-reftest-singletons/line-iterator.html",
+    "talos/tests/perf-reftest-singletons/link-style-cache-1.html",
+    "talos/tests/perf-reftest-singletons/nth-index-1.html",
+    "talos/tests/perf-reftest-singletons/nth-index-2.html",
+    "talos/tests/perf-reftest-singletons/only-children-1.html",
+    "talos/tests/perf-reftest-singletons/parent-basic-singleton.html",
+    "talos/tests/perf-reftest-singletons/scrollbar-styles-1.html",
+    "talos/tests/perf-reftest-singletons/slow-selector-1.html",
+    "talos/tests/perf-reftest-singletons/slow-selector-2.html",
+    "talos/tests/perf-reftest-singletons/style-attr-1.html",
+    "talos/tests/perf-reftest-singletons/style-sharing-style-attr.html",
+    "talos/tests/perf-reftest-singletons/style-sharing.html",
+    "talos/tests/perf-reftest-singletons/svg-text-textLength-1.html",
+    "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
+    "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
+    "talos/tests/perf-reftest-singletons/window-named-property-get.html",
+    "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
 ]
 
 
@@ -187,10 +217,21 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         
         sp3_httpd = MozHttpd(
             port=8000,
-            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "Speedometer3"),
-            path_mappings=path_mappings,
+            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "Speedometer3.0"),
         )
         sp3_httpd.start(block=False)
+
+        mm_httpd = MozHttpd(
+            port=8001,
+            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "MotionMark1.3.1"),
+        )
+        mm_httpd.start(block=False)
+
+        js_httpd = MozHttpd(
+            port=8002,
+            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream2.2"),
+        )
+        js_httpd.start(block=False)
 
         profile_data_dir = os.path.join(topsrcdir, "testing", "profiles")
         with open(os.path.join(profile_data_dir, "profiles.json"), "r") as fh:
@@ -206,6 +247,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             prefs.update(Preferences.read_prefs(path))
 
         interpolation = {"server": "%s:%d" % httpd.httpd.server_address, "OOP": "false"}
+        sp3_interpolation = {"server": "%s:%d" % sp3_httpd.httpd.server_address, "OOP": "false"}
+        mm_interpolation = {"server": "%s:%d" % mm_httpd.httpd.server_address, "OOP": "false"}
+        js_interpolation = {"server": "%s:%d" % js_httpd.httpd.server_address, "OOP": "false"}
         for k, v in prefs.items():
             if isinstance(v, string_types):
                 v = v.format(**interpolation)
@@ -248,19 +292,15 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             driver.start_session()
 
             # Now generate the profile and wait for it to complete
-            for page in SP3_PAGES:
-                driver.navigate("http://%s:%d/%s" % (IP, 8000, page))
-                time.sleep(500)
             for page in PAGES:
                 driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
-                timeout = 2
-                if "Speedometer" in page:
-                    # The Speedometer[23] test actually runs many tests internally in
-                    # javascript, so it needs extra time to run through them. The
-                    # emulator doesn't get very far through the whole suite, but
-                    # this extra time at least lets some of them process.
-                    timeout = 300
-                time.sleep(timeout)
+                time.sleep(2)
+            driver.navigate("http://localhost:8000/index.html")
+            time.sleep(500)
+            driver.navigate("http://localhost:8001/index.html")
+            time.sleep(6000)
+            driver.navigate("http://localhost:8001/index.html")
+            time.sleep(6000)
 
             driver.set_context("chrome")
             driver.execute_script(

@@ -5,7 +5,7 @@ class Params {
     };
     // Enable a detailed developer menu to change the current Params.
     developerMode = false;
-    startAutomatically = false;
+    startAutomatically = true;
     iterationCount = 10;
     suites = [];
     // A list of tags to filter suites

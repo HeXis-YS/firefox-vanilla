@@ -11,13 +11,7 @@ if [[ "$(uname)" == "Linux" ]]; then
   sudo apt update
   sudo apt install -y python3 python3-pip python3-venv gcc watchman sccache git
   python3 -m venv "${WORK_DIR}/venv"
-  export CFLAGS="-march=native -mtune=native -Ofast -flto -flto-partition=none -fuse-linker-plugin -fgraphite-identity -floop-nest-optimize -fipa-pta -fno-semantic-interposition -fno-common -fdevirtualize-at-ltrans -fno-plt"
-  export CXXFLAGS="${CFLAGS}"
-  export LDFLAGS="${CFLAGS} -fuse-ld=mold -s -Wl,-O3,--as-needed,--gc-sections,-z,lazy,-z,norelro,-sort-common"
-  pip cache purge
-  pip install --upgrade pip
   pip install --upgrade mercurial
-  unset CFLAGS CXXFLAGS LDFLAGS
 fi
 
 cd "${WORK_DIR}"
@@ -25,12 +19,13 @@ hg clone --stream --noupdate --config format.generaldelta=true "https://hg.mozil
 pushd firefox
 hg update --clean --config extensions.fsmonitor= "${BUILD_TAG}"
 watchman shutdown-server
-patch -p1 -N < "${PATCHES_DIR}/pgo.patch"
-install -v "${MOZCONFIGS_DIR}/$1" "${WORK_DIR}/firefox/mozconfig"
+patch -p1 -N < "${REPO_DIR}/patches/pgo.patch"
+cp -vrf "${REPO_DIR}/custom/*" ./
+cp -vf "${REPO_DIR}/mozconfigs/$1" "${WORK_DIR}/firefox/mozconfig"
 
 case "$1" in
   windows)
-    python mach --no-interactive bootstrap --application-choice browser
+    mach --no-interactive bootstrap --application-choice browser
     hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor=  "https://hg.mozilla.org/l10n-central/zh-CN" "${MOZBUILD_DIR}/l10n-central/zh-CN)"
     watchman shutdown-server
     ;;
@@ -51,9 +46,8 @@ case "$1" in
         app/src/*/java/org/mozilla/fenix/*/GeckoProvider.kt
     sed -i -e "s/include \".*\"/include \"arm64-v8a\"/" app/build.gradle
     popd
-    yes N | python mach --no-interactive bootstrap --application-choice mobile_android
-    export JAVA_HOME=$(realpath ${MOZBUILD_DIR}/jdk/jdk-*)
-    python mach python python/mozboot/mozboot/android.py --avd-manifest="python/mozboot/mozboot/android-avds/android31-x86_64.json" --no-interactive
+    yes N | mach --no-interactive bootstrap --application-choice mobile_android
+    mach python python/mozboot/mozboot/android.py --avd-manifest="python/mozboot/mozboot/android-avds/android31-x86_64.json" --no-interactive
     ;;
 esac
 
