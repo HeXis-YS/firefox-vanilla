@@ -1,26 +1,30 @@
-XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
-XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
-# ac_add_options --enable-lto=cross,full
-# ac_add_options --enable-profile-use=cross
-# ac_add_options --with-pgo-jarlog=en-US.log
-# ac_add_options --with-pgo-profile-path=merged.profdata
+if test "$GEN_PGO"; then
+    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none"
+    ac_add_options --enable-profile-generate=cross
+elif test "$USE_PGO"; then
+    XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
+    XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
+    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -mllvm -enable-ext-tsp-block-placement=1 -fno-stack-protector -fno-stack-clash-protection"
+    ac_add_options --enable-lto=cross,full
+    ac_add_options --enable-profile-use=cross
+    ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
+    ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
+fi
 
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
-XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
-XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -mllvm -enable-ext-tsp-block-placement=1"
-XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -fuse-ld=mold -s -Wl,-O3,--as-needed,--gc-sections,--icf=all,-z,lazy,-z,norelro,-z,execstack,-sort-common"
+XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS}"
+XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -fuse-ld=lld -s -Wl,-O2,-z,pack-relative-relocs"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
 # Build Configs
-ac_add_options --enable-application=mobile/android
+ac_add_options --enable-project=mobile/android
 ac_add_options --disable-artifact-builds
 ac_add_options --enable-bootstrap
-ac_add_options --enable-linker=mold
 ac_add_options --with-ccache=sccache
 
 # Build for Android
-ac_add_options --target="${XTARGET}"
-ac_add_options --disable-elf-hack
+ac_add_options --target=aarch64
+ac_add_options --enable-elf-hack=relr
 
 # Disable debug & tests
 ac_add_options --disable-debug
@@ -47,7 +51,7 @@ ac_add_options --enable-wasm-multi-memory
 ac_add_options --enable-wasm-simd
 ac_add_options --enable-wasm-relaxed-simd
 export MOZ_OPTIMIZE=1
-export STRIP_CFLAGS="--strip-debug --strip-unneeded"
+export STRIP_CFLAGS="-s"
 
 # Security
 ac_add_options --disable-hardening
