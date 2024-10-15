@@ -1,8 +1,10 @@
 #!/bin/bash
-readonly REPO_DIR="$(dirname "$(realpath "$0")")"
-readonly WORK_DIR="$(dirname "$(realpath "$0")")"
-readonly MOZBUILD_DIR="$(realpath ~/.mozbuild)"
-export PATH="${WORK_DIR}/firefox:${PATH}"
+REPO_DIR="$(dirname "$(realpath "$0")")"
+WORK_DIR="$(pwd)"
+MOZBUILD_DIR="$(realpath ~/.mozbuild)"
+
+export PATH="${MOZBUILD_DIR}/sccache:${PATH}"
+
 if [[ "$(uname)" == "Linux" ]]; then
   export PATH="${WORK_DIR}/venv/bin:${PATH}"
   export ANDROID_HOME=$(realpath ${MOZBUILD_DIR}/android-sdk-linux)

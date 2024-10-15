@@ -23,7 +23,9 @@ XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbol
 ac_add_options --enable-project=browser
 ac_add_options --disable-artifact-builds
 ac_add_options --enable-bootstrap
-ac_add_options --with-ccache=sccache
+if test "$USE_SCCACHE"; then
+    ac_add_options --with-ccache=sccache
+fi
 
 # Build for Windows
 export CC=clang-cl
