@@ -19,7 +19,6 @@ cd ${WORK_DIR}
 hg clone --stream --noupdate --config format.generaldelta=true https://hg.mozilla.org/releases/mozilla-esr128 firefox
 pushd firefox
 hg update --clean --config extensions.fsmonitor= ${HG_TAG}
-patch -p1 -N < ${REPO_DIR}/patches/pgo.patch
 cp -vrf ${REPO_DIR}/custom/* ${GECKO_PATH}/
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
 
