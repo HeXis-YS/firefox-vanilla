@@ -44,6 +44,7 @@ case $1 in
     sed -i \
         -e 's/aboutConfigEnabled(.*)/aboutConfigEnabled(true)/' \
         app/src/*/java/org/mozilla/fenix/*/GeckoProvider.kt
+    echo 'https://assets.mozilla.net/mobile-wallpapers/android' > .wallpaper_url
     popd
     mkdir -p ~/.gradle
     echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
