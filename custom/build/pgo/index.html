@@ -92,8 +92,10 @@
       interval = 380000;
     } else if (testURL.includes("localhost:8002")) {
       interval = 150000;
-    } else if (testURL.includes("webaudio") || testURL.includes("localhost")) {
+    } else if (testURL.includes("localhost")) {
       interval = 120000;
+    } else if (testURL.includes("webaudio")) {
+      interval = 5000;
     }
     w.close();
     w = window.open(testURL);

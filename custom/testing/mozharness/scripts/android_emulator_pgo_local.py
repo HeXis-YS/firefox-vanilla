@@ -90,7 +90,6 @@ PAGES = [
     "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
     "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
     "talos/tests/perf-reftest-singletons/window-named-property-get.html",
-    "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
 ]
 
 
@@ -125,6 +124,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         c = self.config
         self.installer_path = c.get("installer_path")
         self.device_serial = "emulator-5554"
+        self.use_gles3 = True
 
     def query_abs_dirs(self):
         if self.abs_dirs:
@@ -198,7 +198,8 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         PORT = 8888
 
         PATH_MAPPINGS = {
-            "/js-input/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
+            "/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
+            "/talos": "testing/talos/talos",
         }
 
         dirs = self.query_abs_dirs()
@@ -294,13 +295,15 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             # Now generate the profile and wait for it to complete
             for page in PAGES:
                 driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
-                time.sleep(2)
-            driver.navigate("http://localhost:8000/index.html")
-            time.sleep(500)
-            driver.navigate("http://localhost:8001/index.html")
-            time.sleep(6000)
-            driver.navigate("http://localhost:8001/index.html")
-            time.sleep(6000)
+                time.sleep(3)
+            driver.navigate("http://%s:%d/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
+            time.sleep(10)
+            driver.navigate("http://%s:8000/index.html?startAutomatically=true" % IP)
+            time.sleep(400)
+            driver.navigate("http://%s:8001/index.html" % IP)
+            time.sleep(360)
+            driver.navigate("http://%s:8002/index.html" % IP)
+            time.sleep(660)
 
             driver.set_context("chrome")
             driver.execute_script(
@@ -369,6 +372,8 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
 
         httpd.stop()
         sp3_httpd.stop()
+        mm_httpd.stop()
+        js_httpd.stop()
 
 
 if __name__ == "__main__":
