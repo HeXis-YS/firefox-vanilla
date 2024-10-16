@@ -49,7 +49,7 @@ case $1 in
     echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
     yes N | python mach --no-interactive bootstrap --application-choice mobile_android
     mkdir -p ~/.config/"Android Open Source Project"
-    echo -e "[General]\nshowNestedWarning=false\n" >> ~/.config/"Android Open Source Project"/Emulator.conf
+    echo -e "\n[General]\nshowNestedWarning=false" >> ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
     python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
     ;;
