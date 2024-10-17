@@ -38,9 +38,9 @@ case $1 in
     USE_PGO=1 python mach build
     pushd mobile/android/fenix
     ./gradlew assembleRelease
-    cp -vr workspace ${WORK_DIR}/release
-    cp -v app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/*
     popd
+    cp -vr workspace ${WORK_DIR}/release
+    cp -v mobile/android/fenix/app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/*
     ;;
 esac
 
