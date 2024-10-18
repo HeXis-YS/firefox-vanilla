@@ -106,7 +106,7 @@ if __name__ == "__main__":
     js_httpd = MozHttpd(
         port=8002,
         docroot=os.path.join(
-            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream2.2"
+            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream3.0"
         ),
     )
     js_httpd.start(block=False)

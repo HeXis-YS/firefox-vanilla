@@ -297,13 +297,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                 driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
                 time.sleep(3)
             driver.navigate("http://%s:%d/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
-            time.sleep(10)
+            time.sleep(5)
             driver.navigate("http://%s:8000/index.html?startAutomatically=true" % IP)
             time.sleep(400)
             driver.navigate("http://%s:8001/index.html" % IP)
             time.sleep(360)
             driver.navigate("http://%s:8002/index.html" % IP)
-            time.sleep(660)
+            time.sleep(1600)
 
             driver.set_context("chrome")
             driver.execute_script(

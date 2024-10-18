@@ -72,10 +72,10 @@
     "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
     "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
     "talos/tests/perf-reftest-singletons/window-named-property-get.html",
+    "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
     "http://localhost:8000/index.html?startAutomatically=true",
     "http://localhost:8001/index.html",
     "http://localhost:8002/index.html",
-    "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
   ];
   var defaultInterval = 2000;
   var idx = 0;
@@ -88,12 +88,10 @@
   function loadURL() {
     var interval = defaultInterval;
     var testURL = list[idx++];
-    if (testURL.includes("localhost:8001")) {
-      interval = 380000;
-    } else if (testURL.includes("localhost:8002")) {
-      interval = 150000;
+    if (testURL.includes("localhost:8000")) {
+      interval = 100000;
     } else if (testURL.includes("localhost")) {
-      interval = 120000;
+      interval = 360000;
     } else if (testURL.includes("webaudio")) {
       interval = 5000;
     }

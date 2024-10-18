@@ -18,7 +18,7 @@ config = {
         "-selinux",
         "permissive",
         "-memory",
-        "8192",
+        "16384",
         "-cores",
         "8",
         "-skin",

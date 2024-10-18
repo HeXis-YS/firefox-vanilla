@@ -13,8 +13,8 @@ case $1 in
     GEN_PGO=1 python mach build
     python mach package
     mkdir workspace
-    rm -f *.profraw
     pushd workspace
+    rm -f *.profraw
     LLVM_PROFDATA=${MOZBUILD_DIR}/clang/bin/llvm-profdata JARLOG_FILE=en-US.log python ../mach python ../build/pgo/profileserver.py
     popd
     rm -rf obj-x86_64-pc-windows-msvc
