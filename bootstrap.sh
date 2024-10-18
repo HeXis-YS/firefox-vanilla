@@ -24,10 +24,12 @@ cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
 
 case $1 in
   windows)
+    cat ${REPO_DIR}/user.js >> browser/app/profile/firefox.js
     python mach --no-interactive bootstrap --application-choice browser
     hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
     ;;
   android)
+    cat ${REPO_DIR}/user.js >> mobile/android/app/geckoview-prefs.js
     pushd mobile/android/fenix
     sed -i \
         -e 's/applicationId "org.mozilla"/applicationId "org.hexis"/' \
