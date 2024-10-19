@@ -230,7 +230,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
 
         js_httpd = MozHttpd(
             port=8002,
-            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream2.2"),
+            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream3.0"),
         )
         js_httpd.start(block=False)
 

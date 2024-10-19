@@ -21,13 +21,7 @@
  */
 
 #include "zlib_simd.h"
-
-#ifdef HAS_PCLMUL
- #include "crc32_simd.h"
- #ifndef _MSC_VER
-  #include <cpuid.h>
- #endif
-#endif
+#include "zutil.h"      /* for Z_U4, Z_U8, z_crc_t, and FAR definitions */
 
 #ifdef __aarch64__
 
@@ -36,7 +30,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-uint32_t crc32(uint32_t crc, uint8_t *buf, size_t len) {
+uLong crc32(uLong crc, const Bytef *buf, uInt len) {
     crc = ~crc;
 
     while (len >= 8) {
@@ -62,14 +56,19 @@ uint32_t crc32(uint32_t crc, uint8_t *buf, size_t len) {
 
 #else
 
+#ifdef HAS_PCLMUL
+ #include "crc32_simd.h"
+ #ifndef _MSC_VER
+  #include <cpuid.h>
+ #endif
+#endif
+
 #ifdef MAKECRCH
 #  include <stdio.h>
 #  ifndef DYNAMIC_CRC_TABLE
 #    define DYNAMIC_CRC_TABLE
 #  endif /* !DYNAMIC_CRC_TABLE */
 #endif /* MAKECRCH */
-
-#include "zutil.h"      /* for Z_U4, Z_U8, z_crc_t, and FAR definitions */
 
 #define local static
 

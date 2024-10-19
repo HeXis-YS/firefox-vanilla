@@ -40,7 +40,7 @@ case $1 in
     ./gradlew assembleRelease
     popd
     cp -vr workspace ${WORK_DIR}/release
-    cp -v mobile/android/fenix/app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/*
+    cp -v mobile/android/fenix/app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/
     ;;
 esac
 
