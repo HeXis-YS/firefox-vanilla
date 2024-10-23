@@ -24,10 +24,10 @@ from mozharness.mozilla.testing.android import AndroidMixin
 from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
 
 PAGES = [
-    "blueprint/elements.html",
+    "blueprint/sample.html",
     "blueprint/forms.html",
     "blueprint/grid.html",
-    "blueprint/sample.html",
+    "blueprint/elements.html",
     "js-input/3d-thingy.html",
     "js-input/crypto-otp.html",
     "js-input/sunspider/3d-cube.html",
@@ -136,11 +136,10 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
 
         dirs["abs_test_install_dir"] = os.path.join(abs_dirs["abs_src_dir"], "testing")
         dirs["abs_blob_upload_dir"] = os.path.join(self.working_dir, "artifacts", "blobber_upload_dir")
-        work_dir = os.environ.get("MOZ_FETCHES_DIR") or abs_dirs["abs_work_dir"]
-        dirs["abs_xre_dir"] = os.path.join(work_dir, "hostutils")
-        mozbuild_path = os.environ.get("MOZBUILD_STATE_PATH", os.path.expanduser("~/.mozbuild"))
-        abs_dirs["abs_sdk_dir"] = os.environ.get("ANDROID_SDK_HOME", os.path.join(mozbuild_path, "android-sdk-linux"))
-        abs_dirs["abs_avds_dir"] = os.environ.get("ANDROID_EMULATOR_HOME", os.path.join(mozbuild_path, "android-device"))
+        dirs["abs_xre_dir"] = os.path.join(abs_dirs["abs_work_dir"], "hostutils")
+        mozbuild_path = os.path.expanduser("~/.mozbuild")
+        abs_dirs["abs_sdk_dir"] = os.path.join(mozbuild_path, "android-sdk-linux")
+        abs_dirs["abs_avds_dir"] = os.path.join(mozbuild_path, "android-device")
         abs_dirs["abs_bundletool_path"] = os.path.join(mozbuild_path, "bundletool.jar")
 
         for key in dirs.keys():
@@ -198,7 +197,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         PORT = 8888
 
         PATH_MAPPINGS = {
-            "/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
+            "/js-input/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
             "/talos": "testing/talos/talos",
         }
 
@@ -215,24 +214,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             path_mappings=path_mappings,
         )
         httpd.start(block=False)
-        
-        sp3_httpd = MozHttpd(
-            port=8000,
-            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "Speedometer3.0"),
-        )
-        sp3_httpd.start(block=False)
-
-        mm_httpd = MozHttpd(
-            port=8001,
-            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "MotionMark1.3.1"),
-        )
-        mm_httpd.start(block=False)
-
-        js_httpd = MozHttpd(
-            port=8002,
-            docroot=os.path.join(topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream3.0"),
-        )
-        js_httpd.start(block=False)
 
         profile_data_dir = os.path.join(topsrcdir, "testing", "profiles")
         with open(os.path.join(profile_data_dir, "profiles.json"), "r") as fh:
@@ -248,9 +229,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             prefs.update(Preferences.read_prefs(path))
 
         interpolation = {"server": "%s:%d" % httpd.httpd.server_address, "OOP": "false"}
-        sp3_interpolation = {"server": "%s:%d" % sp3_httpd.httpd.server_address, "OOP": "false"}
-        mm_interpolation = {"server": "%s:%d" % mm_httpd.httpd.server_address, "OOP": "false"}
-        js_interpolation = {"server": "%s:%d" % js_httpd.httpd.server_address, "OOP": "false"}
         for k, v in prefs.items():
             if isinstance(v, string_types):
                 v = v.format(**interpolation)
@@ -296,13 +274,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             for page in PAGES:
                 driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
                 time.sleep(3)
-            driver.navigate("http://%s:%d/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
             time.sleep(5)
-            driver.navigate("http://%s:8000/index.html?startAutomatically=true" % IP)
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true" % (IP, PORT))
             time.sleep(400)
-            driver.navigate("http://%s:8001/index.html" % IP)
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/MotionMark1.3.1/index.html" % (IP, PORT))
             time.sleep(360)
-            driver.navigate("http://%s:8002/index.html" % IP)
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
             time.sleep(1600)
 
             driver.set_context("chrome")
@@ -371,9 +349,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         subprocess.check_call(tar_cmd)
 
         httpd.stop()
-        sp3_httpd.stop()
-        mm_httpd.stop()
-        js_httpd.stop()
 
 
 if __name__ == "__main__":

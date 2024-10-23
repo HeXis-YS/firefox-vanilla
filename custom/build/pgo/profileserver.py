@@ -88,30 +88,12 @@ if __name__ == "__main__":
     sp3_httpd = MozHttpd(
         port=8000,
         docroot=os.path.join(
-            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "Speedometer3.0"
+            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "Speedometer3"
         ),
+        path_mappings=path_mappings,
     )
     sp3_httpd.start(block=False)
     print("started SP3 server on port 8000")
-
-    mm_httpd = MozHttpd(
-        port=8001,
-        docroot=os.path.join(
-            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "MotionMark1.3.1"
-        ),
-    )
-    mm_httpd.start(block=False)
-    print("started MM server on port 8001")
-
-    js_httpd = MozHttpd(
-        port=8002,
-        docroot=os.path.join(
-            build.topsrcdir, "third_party", "webkit", "PerformanceTests", "JetStream3.0"
-        ),
-    )
-    js_httpd.start(block=False)
-    print("started JS server on port 8002")
-
     locations = ServerLocations()
     locations.add_host(host="127.0.0.1", port=PORT, options="primary,privileged")
 
@@ -132,8 +114,6 @@ if __name__ == "__main__":
 
         interpolation = {"server": "%s:%d" % httpd.httpd.server_address}
         sp3_interpolation = {"server": "%s:%d" % sp3_httpd.httpd.server_address}
-        mm_interpolation = {"server": "%s:%d" % mm_httpd.httpd.server_address}
-        js_interpolation = {"server": "%s:%d" % js_httpd.httpd.server_address}
         for k, v in prefs.items():
             if isinstance(v, str):
                 v = v.format(**interpolation)
@@ -191,10 +171,8 @@ if __name__ == "__main__":
                 print("Firefox output (%s):" % logfile)
                 with open(logfile) as f:
                     print(f.read())
-            httpd.stop()
             sp3_httpd.stop()
-            mm_httpd.stop()
-            js_httpd.stop()
+            httpd.stop()
             get_crashreports(profilePath, name="Profile initialization")
             sys.exit(ret)
 
@@ -223,10 +201,8 @@ if __name__ == "__main__":
         )
         runner.start(debug_args=debug_args, interactive=interactive)
         ret = runner.wait()
-        httpd.stop()
         sp3_httpd.stop()
-        mm_httpd.stop()
-        js_httpd.stop()
+        httpd.stop()
         if ret:
             print("Firefox exited with code %d during profiling" % ret)
             logfile = process_args.get("logfile")

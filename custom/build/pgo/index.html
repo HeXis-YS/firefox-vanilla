@@ -73,9 +73,9 @@
     "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
     "talos/tests/perf-reftest-singletons/window-named-property-get.html",
     "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
-    "http://localhost:8000/index.html?startAutomatically=true",
-    "http://localhost:8001/index.html",
-    "http://localhost:8002/index.html",
+    "webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true",
+    "webkit/PerformanceTests/MotionMark1.3.1/index.html",
+    "webkit/PerformanceTests/JetStream3.0/index.html",
   ];
   var defaultInterval = 2000;
   var idx = 0;
@@ -88,9 +88,9 @@
   function loadURL() {
     var interval = defaultInterval;
     var testURL = list[idx++];
-    if (testURL.includes("localhost:8000")) {
+    if (testURL.includes("Speedometer")) {
       interval = 100000;
-    } else if (testURL.includes("localhost")) {
+    } else if (testURL.includes("MotionMark") || testURL.includes("JetStream")) {
       interval = 360000;
     } else if (testURL.includes("webaudio")) {
       interval = 5000;
