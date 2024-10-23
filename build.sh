@@ -28,9 +28,9 @@ case $1 in
     rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python mach build
     sed -i '/^$/d' /root/.mozbuild/android-device/avd/mozemulator-android31-x86_64.ini
-    python mach python testing/mozharness/scripts/android_emulator_pgo_local.py \
+    python mach python testing/mozharness/scripts/android_emulator_pgo.py \
       --config-file testing/mozharness/configs/android/android_common.py \
-      --config-file testing/mozharness/configs/android/android-aarch64-profile-generation_local.py \
+      --config-file testing/mozharness/configs/android/android-aarch64-profile-generation.py \
       --config-file testing/mozharness/configs/android/android_pgo.py \
       --installer-path obj-aarch64-unknown-linux-android/gradle/build/mobile/android/test_runner/outputs/apk/withGeckoBinaries/debug/test_runner-withGeckoBinaries-debug.apk
     ${MOZBUILD_DIR}/android-sdk-linux/platform-tools/adb -s emulator-5554 emu kill
