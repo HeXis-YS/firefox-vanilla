@@ -132,15 +132,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         abs_dirs = super(AndroidProfileRun, self).query_abs_dirs()
         dirs = {}
 
-        self.working_dir = os.environ.get("WORKING_DIR") or os.getcwd()
-
         dirs["abs_test_install_dir"] = os.path.join(abs_dirs["abs_src_dir"], "testing")
-        dirs["abs_blob_upload_dir"] = os.path.join(self.working_dir, "artifacts", "blobber_upload_dir")
-        dirs["abs_xre_dir"] = os.path.join(abs_dirs["abs_work_dir"], "hostutils")
-        mozbuild_path = os.path.expanduser("~/.mozbuild")
-        abs_dirs["abs_sdk_dir"] = os.path.join(mozbuild_path, "android-sdk-linux")
-        abs_dirs["abs_avds_dir"] = os.path.join(mozbuild_path, "android-device")
-        abs_dirs["abs_bundletool_path"] = os.path.join(mozbuild_path, "bundletool.jar")
+        dirs["abs_blob_upload_dir"] = "/builds/worker/artifacts/blobber_upload_dir"
+        work_dir = os.environ.get("MOZ_FETCHES_DIR") or abs_dirs["abs_work_dir"]
+        dirs["abs_xre_dir"] = os.path.join(work_dir, "hostutils")
+        dirs["abs_sdk_dir"] = os.path.join(work_dir, "android-sdk-linux")
+        dirs["abs_avds_dir"] = os.path.join(work_dir, "android-device")
+        dirs["abs_bundletool_path"] = os.path.join(work_dir, "bundletool.jar")
 
         for key in dirs.keys():
             if key not in abs_dirs:
@@ -246,6 +244,8 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         env["MOZ_JAR_LOG_FILE"] = jarlog
         env["LLVM_PROFILE_FILE"] = profdata
 
+        if self.query_minidump_stackwalk():
+            os.environ["MINIDUMP_STACKWALK"] = self.minidump_stackwalk_path
         os.environ["MINIDUMP_SAVE_PATH"] = self.query_abs_dirs()["abs_blob_upload_dir"]
         if not self.symbols_path:
             self.symbols_path = os.environ.get("MOZ_FETCHES_DIR")
@@ -253,7 +253,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         adbdevice.rm(outputdir, recursive=True, force=True)
         adbdevice.mkdir(outputdir, parents=True)
 
-        workspace_dir = os.path.join(self.working_dir, "workspace")
+        workspace_dir = os.path.join(os.getcwd(), "workspace")
 
         try:
             # Run Fennec a first time to initialize its profile
@@ -323,7 +323,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                 "Only found 1 profraw file. Did child processes terminate early?"
             )
         merge_cmd = [
-            os.path.join(os.path.expanduser("~/.mozbuild"), "clang/bin/llvm-profdata"),
+            os.path.join(os.environ["MOZ_FETCHES_DIR"], "clang/bin/llvm-profdata"),
             "merge",
             "--sparse=true",
             "-o",
@@ -335,18 +335,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                 "INFRA-ERROR: Failed to merge profile data. Corrupt profile?",
                 EXIT_STATUS_DICT[TBPL_RETRY],
             )
-
-        # tarfile doesn't support xz in this version of Python
-        tar_cmd = [
-            "tar",
-            "-acvf",
-            os.path.join(self.working_dir, "artifacts", "profdata.tar.xz"),
-            "-C",
-            workspace_dir,
-            "merged.profdata",
-            "en-US.log",
-        ]
-        subprocess.check_call(tar_cmd)
 
         httpd.stop()
 
