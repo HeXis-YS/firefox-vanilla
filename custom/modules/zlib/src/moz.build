@@ -16,27 +16,87 @@ else:
     # The final library is in config/external/zlib
     FINAL_LIBRARY = 'zlib'
 
+DEFINES["ZLIB_COMPAT"] = True
+# DEFINES["WITH_GZFILEOP"] = True
+DEFINES["DISABLE_RUNTIME_CPU_DETECTION"] = True
+DEFINES["HAVE_ATTRIBUTE_ALIGNED"] = True
+DEFINES["HAVE_BUILTIN_ASSUME_ALIGNED"] = True
+DEFINES["HAVE_BUILTIN_CTZ"] = True
+DEFINES["HAVE_BUILTIN_CTZLL"] = True
+DEFINES["HAVE_VISIBILITY_INTERNAL"] = True
+
 # These files can't be unified because zlib's headers don't use include guards.
 SOURCES += [
     'adler32.c',
-    'adler32_simd.c',
+    'arch/generic/adler32_c.c',
+    'arch/generic/adler32_fold_c.c',
+    'arch/generic/chunkset_c.c',
+    'arch/generic/compare256_c.c',
+    'arch/generic/crc32_braid_c.c',
+    'arch/generic/crc32_fold_c.c',
+    'arch/generic/slide_hash_c.c',
     'compress.c',
     'crc32.c',
-    'crc32_simd.c',
+    'crc32_braid_comb.c',
     'deflate.c',
-    'gzclose.c',
+    'deflate_fast.c',
+    'deflate_huff.c',
+    'deflate_medium.c',
+    'deflate_quick.c',
+    'deflate_rle.c',
+    'deflate_slow.c',
+    'deflate_stored.c',
     'gzlib.c',
     'gzread.c',
     'gzwrite.c',
     'infback.c',
-    'inffast.c',
-    'inffast_chunk.c',
     'inflate.c',
     'inftrees.c',
+    'insert_string.c',
+    'insert_string_roll.c',
     'trees.c',
     'uncompr.c',
     'zutil.c',
 ]
+
+# if CONFIG["OS_TARGET"] == "WINNT":
+#     DEFINES["NO_FSEEKO"] = True
+#     DEFINES["_CRT_NONSTDC_NO_DEPRECATE"] = True
+#     DEFINES["_CRT_SECURE_NO_DEPRECATE"] = True
+
+if CONFIG["OS_TARGET"] != "WINNT":
+    DEFINES["HAVE_UNISTD_H"] = True
+
+if CONFIG["TARGET_CPU"] == "x86_64":
+    SOURCES += [
+        'arch/x86/adler32_avx2.c',
+        'arch/x86/adler32_avx512.c',
+        'arch/x86/adler32_avx512_vnni.c',
+        'arch/x86/adler32_sse42.c',
+        'arch/x86/adler32_ssse3.c',
+        'arch/x86/chunkset_avx2.c',
+        'arch/x86/chunkset_sse2.c',
+        'arch/x86/chunkset_ssse3.c',
+        'arch/x86/compare256_avx2.c',
+        'arch/x86/compare256_sse2.c',
+        'arch/x86/crc32_pclmulqdq.c',
+        'arch/x86/crc32_vpclmulqdq.c',
+        'arch/x86/slide_hash_avx2.c',
+        'arch/x86/slide_hash_sse2.c',
+    ]
+
+if CONFIG["TARGET_CPU"] == "aarch64":
+    DEFINES["HAVE_ARM_ACLE_H"] = True
+    # DEFINES["HAVE_SYS_AUXV_H"] = True
+    # DEFINES["HAVE_LINUX_AUXVEC_H"] = True
+    # DEFINES["ARM_AUXV_HAS_CRC32"] = True
+    SOURCES += [
+        'arch/arm/adler32_neon.c',
+        'arch/arm/chunkset_neon.c',
+        'arch/arm/compare256_neon.c',
+        'arch/arm/crc32_acle.c',
+        'arch/arm/slide_hash_neon.c',
+    ]
 
 # We allow warnings for third-party code that can be updated from upstream.
 AllowCompilerWarnings()
