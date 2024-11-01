@@ -1,6 +1,6 @@
 if test "$GEN_PGO"; then
     XARCH_CFLAGS="-march=armv8-a+crc"
-    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none"
+    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
     ac_add_options --enable-profile-generate=cross
 elif test "$USE_PGO"; then
     XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
@@ -10,12 +10,21 @@ elif test "$USE_PGO"; then
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
+else
+    XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
+    XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
+    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
+    #XOPT_RUSTFLAGS="-C codegen-units=1"
+    #ac_add_options --enable-lto=cross,full
 fi
 
+if test "$USE_MIMALLOC"; then
+    MIMALLOC_FLAGS="-I/mnt/mimalloc/include -fno-builtin-malloc -ftls-model=initial-exec -DMI_MALLOC_OVERRIDE /mnt/mimalloc/src/static.c"
+fi
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
 XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS}"
-XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -s -Wl,-O2"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
+XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${MIMALLOC_FLAGS} -s -Wl,-O2"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
@@ -45,7 +54,11 @@ ac_add_options --enable-strip
 ac_add_options --enable-install-strip
 ac_add_options --enable-minify=properties
 ac_add_options --enable-clang-plugin
-ac_add_options --enable-jemalloc
+if test "$USE_MIMALLOC"; then
+    ac_add_options --disable-jemalloc
+else
+    ac_add_options --enable-jemalloc
+fi
 ac_add_options --enable-optimize="${XCFLAGS}"
 ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
