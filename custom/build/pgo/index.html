@@ -89,9 +89,9 @@
     var interval = defaultInterval;
     var testURL = list[idx++];
     if (testURL.includes("Speedometer")) {
-      interval = 100000;
+      interval = 120000;
     } else if (testURL.includes("MotionMark") || testURL.includes("JetStream")) {
-      interval = 360000;
+      interval = 400000;
     } else if (testURL.includes("webaudio")) {
       interval = 5000;
     }

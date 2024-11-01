@@ -1,23 +1,29 @@
 # Enable PGO
 if test "$GEN_PGO"; then
-    XARCH_CFLAGS="/clang:-march=native /clang:-mtune=native"
-    XARCH_RUSTFLAGS="-C target-cpu=native"
-    XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-ffp-contract=fast -fcf-protection=none"
+    XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
+    XARCH_RUSTFLAGS="-C target-cpu=znver4"
+    XOPT_RUSTFLAGS="-C lto=no"
     ac_add_options --enable-profile-generate=cross
 elif test "$USE_PGO"; then
     XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
     XARCH_RUSTFLAGS="-C target-cpu=znver4"
-    XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-ffp-contract=fast -fcf-protection=none"
+    XOPT_RUSTFLAGS="-C codegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
+else
+    XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
+    XARCH_RUSTFLAGS="-C target-cpu=znver4"
+    XOPT_RUSTFLAGS="-C codegen-units=1"
+    ac_add_options --enable-lto=cross,full
 fi
 
+XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-ffp-contract=fast"
 XMSVC_CFLAGS="-O2 -Ob2 -Oi -Ot -Oy -GF -GS- -guard:cf- -guard:ehcont- -Gr -Gw -Gy"
 XCFLAGS="${XMSVC_CFLAGS} ${XARCH_CFLAGS} ${XCLANG_CFLAGS}"
 XLDFLAGS="/OPT:REF,ICF"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} -C opt-level=3 -C codegen-units=1 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=browser
@@ -54,7 +60,7 @@ ac_add_options --enable-strip
 ac_add_options --enable-install-strip
 ac_add_options --enable-minify=properties
 ac_add_options --enable-clang-plugin
-ac_add_options --enable-jemalloc
+ac_add_options --disable-jemalloc
 ac_add_options --enable-optimize="${XCFLAGS}"
 ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
