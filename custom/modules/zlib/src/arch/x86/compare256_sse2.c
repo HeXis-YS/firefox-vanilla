@@ -4,11 +4,12 @@
  */
 
 #include "zbuild.h"
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-
 #include "zutil_p.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
+
+#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+
 #include <emmintrin.h>
 
 static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t *src1) {

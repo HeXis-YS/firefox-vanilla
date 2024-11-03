@@ -7,11 +7,11 @@
 #define ZCONF_H
 
 #include "mozzconf.h"
-#define deflateInit MOZ_Z_deflateInit
-#define deflateInit2 MOZ_Z_deflateInit2
-#define inflateInit MOZ_Z_inflateInit
-#define inflateInit2 MOZ_Z_inflateInit2
 
+#define deflateInit MOZ_Z_deflateInit
+#define inflateInit MOZ_Z_inflateInit
+#define deflateInit2 MOZ_Z_deflateInit2
+#define inflateInit2 MOZ_Z_inflateInit2
 
 #if !defined(_WIN32) && defined(__WIN32__)
 #  define _WIN32

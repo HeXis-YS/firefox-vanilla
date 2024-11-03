@@ -5,9 +5,9 @@
  *   Adam Stylinski <kungfujesus06@gmail.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "zbuild.h"
 #ifdef ARM_NEON
 #include "neon_intrins.h"
+#include "zbuild.h"
 #include "adler32_p.h"
 
 static void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t len) {

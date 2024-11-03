@@ -10,9 +10,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #include "zbuild.h"
-#ifdef X86_AVX2
-
 #include "deflate.h"
+
 #include <immintrin.h>
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i wsize) {
@@ -39,5 +38,3 @@ Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
     slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
     slide_hash_chain(s->prev, wsize, ymm_wsize);
 }
-
-#endif

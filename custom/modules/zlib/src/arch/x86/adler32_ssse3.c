@@ -7,10 +7,11 @@
  */
 
 #include "zbuild.h"
-#ifdef X86_SSSE3
-
 #include "adler32_p.h"
 #include "adler32_ssse3_p.h"
+
+#ifdef X86_SSSE3
+
 #include <immintrin.h>
 
 Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len) {

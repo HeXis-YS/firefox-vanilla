@@ -8,9 +8,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "zbuild.h"
 #ifdef ARM_NEON
 #include "neon_intrins.h"
+#include "zbuild.h"
 #include "deflate.h"
 
 /* SIMD version of hash_chain rebase */

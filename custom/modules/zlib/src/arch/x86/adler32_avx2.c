@@ -7,9 +7,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "zbuild.h"
 #ifdef X86_AVX2
 
+#include "zbuild.h"
 #include <immintrin.h>
 #include "adler32_p.h"
 #include "adler32_avx2_p.h"

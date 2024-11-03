@@ -6,9 +6,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "zbuild.h"
 #ifdef X86_AVX512
 
+#include "zbuild.h"
 #include "adler32_p.h"
 #include "arch_functions.h"
 #include <immintrin.h>

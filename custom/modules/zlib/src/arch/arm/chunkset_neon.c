@@ -2,9 +2,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "zbuild.h"
 #ifdef ARM_NEON
 #include "neon_intrins.h"
+#include "zbuild.h"
 #include "arch/generic/chunk_permute_table.h"
 
 typedef uint8x16_t chunk_t;

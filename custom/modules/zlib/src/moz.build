@@ -59,14 +59,6 @@ SOURCES += [
     'zutil.c',
 ]
 
-# if CONFIG["OS_TARGET"] == "WINNT":
-#     DEFINES["NO_FSEEKO"] = True
-#     DEFINES["_CRT_NONSTDC_NO_DEPRECATE"] = True
-#     DEFINES["_CRT_SECURE_NO_DEPRECATE"] = True
-
-if CONFIG["OS_TARGET"] != "WINNT":
-    DEFINES["HAVE_UNISTD_H"] = True
-
 if CONFIG["TARGET_CPU"] == "x86_64":
     SOURCES += [
         'arch/x86/adler32_avx2.c',
@@ -87,9 +79,6 @@ if CONFIG["TARGET_CPU"] == "x86_64":
 
 if CONFIG["TARGET_CPU"] == "aarch64":
     DEFINES["HAVE_ARM_ACLE_H"] = True
-    # DEFINES["HAVE_SYS_AUXV_H"] = True
-    # DEFINES["HAVE_LINUX_AUXVEC_H"] = True
-    # DEFINES["ARM_AUXV_HAS_CRC32"] = True
     SOURCES += [
         'arch/arm/adler32_neon.c',
         'arch/arm/chunkset_neon.c',
@@ -98,9 +87,24 @@ if CONFIG["TARGET_CPU"] == "aarch64":
         'arch/arm/slide_hash_neon.c',
     ]
 
+if CONFIG["OS_TARGET"] != "WINNT":
+    DEFINES["HAVE_UNISTD_H"] = True
+    CFLAGS += ["-fvisibility=default"]
+
 # We allow warnings for third-party code that can be updated from upstream.
 AllowCompilerWarnings()
 
 # ... most warnings, anyway. https://github.com/madler/zlib/issues/633
 if CONFIG['CC_TYPE'] in ('clang', 'clang-cl'):
     CFLAGS += ["-Wno-deprecated-non-prototype"]
+
+if CONFIG['CC_TYPE'] == 'clang':
+    CFLAGS += [
+        '-include',
+        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
+    ]
+elif CONFIG['CC_TYPE'] == 'clang-cl':
+    CFLAGS += [
+        "-FI",
+        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
+    ]
