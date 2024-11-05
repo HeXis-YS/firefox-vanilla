@@ -1,11 +1,10 @@
 if test "$GEN_PGO"; then
     XARCH_CFLAGS="-march=armv8-a+crc"
-    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
     ac_add_options --enable-profile-generate=cross
 elif test "$USE_PGO"; then
     XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
     XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
-    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
+    XOPT_RUSTFLAGS="-C codegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
@@ -13,7 +12,6 @@ elif test "$USE_PGO"; then
 else
     XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
     XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
-    XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -ffp-contract=fast -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
     #XOPT_RUSTFLAGS="-C codegen-units=1"
     #ac_add_options --enable-lto=cross,full
 fi
@@ -22,6 +20,7 @@ if test "$USE_MIMALLOC"; then
     MIMALLOC_FLAGS="-I/mnt/mimalloc/include -fno-builtin-malloc -ftls-model=initial-exec -DMI_MALLOC_OVERRIDE /mnt/mimalloc/src/static.c"
 fi
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
+XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
 XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS}"
 XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${MIMALLOC_FLAGS} -s -Wl,-O2"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
@@ -112,7 +111,7 @@ mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
 mk_add_options MOZ_PARALLEL_COMPILE=1
 
 # Compiler, Linker, and Rust flags
-export CPPFLAGS="-DNDEBUG -D_NDEBUG"
+# export CPPFLAGS="-DNDEBUG -D_NDEBUG"
 export CFLAGS="${CFLAGS} ${XCFLAGS}"
 export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
 export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"

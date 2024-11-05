@@ -270,18 +270,18 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             )
             driver.start_session()
 
-            # Now generate the profile and wait for it to complete
-            for page in PAGES:
-                driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
-                time.sleep(3)
-            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
-            time.sleep(5)
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
+            time.sleep(1600)
             driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true" % (IP, PORT))
             time.sleep(400)
             driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/MotionMark1.3.1/index.html" % (IP, PORT))
             time.sleep(360)
-            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
-            time.sleep(1600)
+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
+            time.sleep(10)
+            # Now generate the profile and wait for it to complete
+            for page in PAGES:
+                driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
+                time.sleep(2)
 
             driver.set_context("chrome")
             driver.execute_script(

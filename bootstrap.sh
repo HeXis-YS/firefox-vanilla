@@ -53,7 +53,7 @@ case $1 in
     mkdir -p ~/.config/"Android Open Source Project"
     echo -e "\n[General]\nshowNestedWarning=false" >> ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
-    python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
+    python mach python python/mozboot/mozboot/android.py --avd-manifest=${REPO_DIR}/android-latest-x86_64.json --no-interactive
     ;;
 esac
 

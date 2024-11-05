@@ -8,26 +8,20 @@
 # mozharness configuration from android_common.py, or similar.
 
 config = {
-    "emulator_avd_name": "mozemulator-android31-x86_64",
+    "emulator_avd_name": "mozemulator-android-latest-x86_64",
     "emulator_process_name": "qemu-system-x86_64",
     "emulator_extra_args": [
-        "-gpu",
-        "on",
+        "-gpu", "host",
         "-skip-adb-auth",
-        "-ranchu",
-        "-selinux",
-        "permissive",
-        "-memory",
-        "16384",
-        "-cores",
-        "8",
-        "-skin",
-        "1280x960",
+        "-selinux", "permissive",
+        "-memory", "32768",
+        "-cores", "12",
+        "-skin", "1280x960",
         "-no-snapstorage",
         "-no-snapshot",
         # Disables first-run dialogs
-        "-prop",
-        "ro.test_harness=true",
+        "-prop", "ro.test_harness=true",
+        "-qemu", "-cpu", "host", "-smp", "cores=12"
     ],
     "exes": {
         "adb": "%(abs_sdk_dir)s/platform-tools/adb",

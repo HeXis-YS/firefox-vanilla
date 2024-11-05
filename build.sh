@@ -27,7 +27,7 @@ case $1 in
   android)
     rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python mach build
-    sed -i '/^$/d' /root/.mozbuild/android-device/avd/mozemulator-android31-x86_64.ini
+    sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
     MOZ_FETCHES_DIR=${MOZBUILD_DIR} python mach python testing/mozharness/scripts/android_emulator_pgo.py \
       --config-file testing/mozharness/configs/android/android_common.py \
       --config-file testing/mozharness/configs/android/android-aarch64-profile-generation.py \
