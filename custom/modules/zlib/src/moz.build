@@ -16,15 +16,6 @@ else:
     # The final library is in config/external/zlib
     FINAL_LIBRARY = 'zlib'
 
-DEFINES["ZLIB_COMPAT"] = True
-# DEFINES["WITH_GZFILEOP"] = True
-DEFINES["DISABLE_RUNTIME_CPU_DETECTION"] = True
-DEFINES["HAVE_ATTRIBUTE_ALIGNED"] = True
-DEFINES["HAVE_BUILTIN_ASSUME_ALIGNED"] = True
-DEFINES["HAVE_BUILTIN_CTZ"] = True
-DEFINES["HAVE_BUILTIN_CTZLL"] = True
-DEFINES["HAVE_VISIBILITY_INTERNAL"] = True
-
 # These files can't be unified because zlib's headers don't use include guards.
 SOURCES += [
     'adler32.c',
@@ -87,9 +78,29 @@ if CONFIG["TARGET_CPU"] == "aarch64":
         'arch/arm/slide_hash_neon.c',
     ]
 
-if CONFIG["OS_TARGET"] != "WINNT":
-    DEFINES["HAVE_UNISTD_H"] = True
-    CFLAGS += ["-fvisibility=default"]
+DEFINES["ZLIB_COMPAT"] = True
+# DEFINES["WITH_GZFILEOP"] = True
+DEFINES["DISABLE_RUNTIME_CPU_DETECTION"] = True
+DEFINES["HAVE_ATTRIBUTE_ALIGNED"] = True
+DEFINES["HAVE_BUILTIN_ASSUME_ALIGNED"] = True
+DEFINES["HAVE_BUILTIN_CTZ"] = True
+DEFINES["HAVE_BUILTIN_CTZLL"] = True
+DEFINES["HAVE_VISIBILITY_INTERNAL"] = True
+
+if CONFIG["OS_TARGET"] == "WINNT":
+    DEFINES["ZLIB_DLL"] = True
+
+if CONFIG['CC_TYPE'] == 'clang':
+    CFLAGS += [
+        '-include',
+        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
+        "-fvisibility=default",
+    ]
+elif CONFIG['CC_TYPE'] == 'clang-cl':
+    CFLAGS += [
+        "-FI",
+        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
+    ]
 
 # We allow warnings for third-party code that can be updated from upstream.
 AllowCompilerWarnings()
@@ -97,14 +108,3 @@ AllowCompilerWarnings()
 # ... most warnings, anyway. https://github.com/madler/zlib/issues/633
 if CONFIG['CC_TYPE'] in ('clang', 'clang-cl'):
     CFLAGS += ["-Wno-deprecated-non-prototype"]
-
-if CONFIG['CC_TYPE'] == 'clang':
-    CFLAGS += [
-        '-include',
-        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
-    ]
-elif CONFIG['CC_TYPE'] == 'clang-cl':
-    CFLAGS += [
-        "-FI",
-        TOPSRCDIR + '/modules/zlib/src/zlib_simd.h',
-    ]
