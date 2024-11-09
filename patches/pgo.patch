@@ -55,11 +55,3 @@ index aae5e79..5891e59 100755
          jarlog = os.getenv("JARLOG_FILE")
          if jarlog:
              env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
-@@ -234,6 +234,7 @@ if __name__ == "__main__":
-             merge_cmd = [
-                 llvm_profdata,
-                 "merge",
-+                "--sparse=true",
-                 "-o",
-                 merged_profdata,
-             ] + profraw_files

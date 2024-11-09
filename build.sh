@@ -14,14 +14,25 @@ case $1 in
     python mach package
     mkdir workspace
     pushd workspace
-    rm -f *.profraw
-    LLVM_PROFDATA=${MOZBUILD_DIR}/clang/bin/llvm-profdata JARLOG_FILE=en-US.log python ../mach python ../build/pgo/profileserver.py
+    JARLOG_FILE=en-US.log python ../mach python ../build/pgo/profileserver.py
+    ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true *.profraw -o merged.profdata
     popd
+
+    rm -rf obj-x86_64-pc-windows-msvc
+    CSIR_PGO=1 python mach build
+    python mach package
+    pushd workspace
+    python ../mach python ../build/pgo/profileserver.py
+    ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
+    popd
+
     rm -rf obj-x86_64-pc-windows-msvc
     USE_PGO=1 python mach build
     python mach package
     python mach build installers-zh-CN
-    cp -vr workspace ${WORK_DIR}/release
+
+    mkdir -p ${WORK_DIR}/release
+    cp -vr workspace/*.profdata ${WORK_DIR}/release/
     cp -v obj-x86_64-pc-windows-msvc/dist/install/sea/*.exe ${WORK_DIR}/release/
     ;;
   android)
