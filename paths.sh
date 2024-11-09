@@ -1,6 +1,7 @@
 #!/bin/bash
 REPO_DIR="$(dirname "$(realpath "$0")")"
 WORK_DIR="$(pwd)"
+PATCHES_DIR="${WORK_DIR}/patches"
 MOZBUILD_DIR="$(realpath ~/.mozbuild)"
 export GECKO_PATH="${WORK_DIR}/firefox"
 

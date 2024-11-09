@@ -1,0 +1,220 @@
+diff --git a/testing/mozharness/configs/android/android-aarch64-profile-generation.py b/testing/mozharness/configs/android/android-aarch64-profile-generation.py
+index acbe1af..4e783f1 100644
+--- a/testing/mozharness/configs/android/android-aarch64-profile-generation.py
++++ b/testing/mozharness/configs/android/android-aarch64-profile-generation.py
+@@ -8,28 +8,20 @@
+ # mozharness configuration from android_common.py, or similar.
+ 
+ config = {
+-    "emulator_avd_name": "mozemulator-android31-x86_64",
++    "emulator_avd_name": "mozemulator-android-latest-x86_64",
+     "emulator_process_name": "qemu-system-x86_64",
+     "emulator_extra_args": [
+-        "-gpu",
+-        "on",
++        "-gpu", "host",
+         "-skip-adb-auth",
+-        "-verbose",
+-        "-show-kernel",
+-        "-ranchu",
+-        "-selinux",
+-        "permissive",
+-        "-memory",
+-        "4096",
+-        "-cores",
+-        "4",
+-        "-skin",
+-        "800x1280",
++        "-selinux", "permissive",
++        "-memory", "32768",
++        "-cores", "12",
++        "-skin", "1280x960",
+         "-no-snapstorage",
+         "-no-snapshot",
+         # Disables first-run dialogs
+-        "-prop",
+-        "ro.test_harness=true",
++        "-prop", "ro.test_harness=true",
++        "-qemu", "-cpu", "host", "-smp", "cores=12"
+     ],
+     "exes": {
+         "adb": "%(abs_sdk_dir)s/platform-tools/adb",
+diff --git a/testing/mozharness/scripts/android_emulator_pgo.py b/testing/mozharness/scripts/android_emulator_pgo.py
+index 885c486..087c5b5 100644
+--- a/testing/mozharness/scripts/android_emulator_pgo.py
++++ b/testing/mozharness/scripts/android_emulator_pgo.py
+@@ -24,8 +24,6 @@ from mozharness.mozilla.testing.android import AndroidMixin
+ from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
+ 
+ PAGES = [
+-    "js-input/webkit/PerformanceTests/Speedometer/index.html",
+-    "js-input/webkit/PerformanceTests/Speedometer3/index.html?startAutomatically=true",
+     "blueprint/sample.html",
+     "blueprint/forms.html",
+     "blueprint/grid.html",
+@@ -58,6 +56,40 @@ PAGES = [
+     "js-input/sunspider/string-tagcloud.html",
+     "js-input/sunspider/string-unpack-code.html",
+     "js-input/sunspider/string-validate-input.html",
++    "talos/tests/perf-reftest-singletons/abspos-reflow-1.html",
++    "talos/tests/perf-reftest-singletons/attr-selector-1.html",
++    "talos/tests/perf-reftest-singletons/bidi-resolution-1.html",
++    "talos/tests/perf-reftest-singletons/bloom-basic-2.html",
++    "talos/tests/perf-reftest-singletons/bloom-basic.html",
++    "talos/tests/perf-reftest-singletons/coalesce-1.html",
++    "talos/tests/perf-reftest-singletons/coalesce-2.html",
++    "talos/tests/perf-reftest-singletons/display-none-1.html",
++    "talos/tests/perf-reftest-singletons/external-string-pass.html",
++    "talos/tests/perf-reftest-singletons/getElementById-1.html",
++    "talos/tests/perf-reftest-singletons/id-getter-1.html",
++    "talos/tests/perf-reftest-singletons/id-getter-2.html",
++    "talos/tests/perf-reftest-singletons/id-getter-3.html",
++    "talos/tests/perf-reftest-singletons/id-getter-4.html",
++    "talos/tests/perf-reftest-singletons/id-getter-5.html",
++    "talos/tests/perf-reftest-singletons/id-getter-6.html",
++    "talos/tests/perf-reftest-singletons/id-getter-7.html",
++    "talos/tests/perf-reftest-singletons/inline-style-cache-1.html",
++    "talos/tests/perf-reftest-singletons/line-iterator.html",
++    "talos/tests/perf-reftest-singletons/link-style-cache-1.html",
++    "talos/tests/perf-reftest-singletons/nth-index-1.html",
++    "talos/tests/perf-reftest-singletons/nth-index-2.html",
++    "talos/tests/perf-reftest-singletons/only-children-1.html",
++    "talos/tests/perf-reftest-singletons/parent-basic-singleton.html",
++    "talos/tests/perf-reftest-singletons/scrollbar-styles-1.html",
++    "talos/tests/perf-reftest-singletons/slow-selector-1.html",
++    "talos/tests/perf-reftest-singletons/slow-selector-2.html",
++    "talos/tests/perf-reftest-singletons/style-attr-1.html",
++    "talos/tests/perf-reftest-singletons/style-sharing-style-attr.html",
++    "talos/tests/perf-reftest-singletons/style-sharing.html",
++    "talos/tests/perf-reftest-singletons/svg-text-textLength-1.html",
++    "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
++    "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
++    "talos/tests/perf-reftest-singletons/window-named-property-get.html",
+ ]
+ 
+ 
+@@ -92,6 +124,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+         c = self.config
+         self.installer_path = c.get("installer_path")
+         self.device_serial = "emulator-5554"
++        self.use_gles3 = True
+ 
+     def query_abs_dirs(self):
+         if self.abs_dirs:
+@@ -143,7 +176,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+         assert (
+             self.installer_path is not None
+         ), "Either add installer_path to the config or use --installer-path."
+-        self.install_android_app(self.installer_path)
++        self.install_android_app(self.installer_path, replace=True)
+         self.info("Finished installing apps for %s" % self.device_serial)
+ 
+     def run_tests(self):
+@@ -163,6 +196,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+ 
+         PATH_MAPPINGS = {
+             "/js-input/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
++            "/talos": "testing/talos/talos",
+         }
+ 
+         dirs = self.query_abs_dirs()
+@@ -216,7 +250,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+         if not self.symbols_path:
+             self.symbols_path = os.environ.get("MOZ_FETCHES_DIR")
+ 
++        adbdevice.rm(outputdir, recursive=True, force=True)
+         adbdevice.mkdir(outputdir, parents=True)
++        workspace_dir = os.path.join(os.getcwd(), "workspace")
+ 
+         try:
+             # Run Fennec a first time to initialize its profile
+@@ -233,16 +269,18 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+             )
+             driver.start_session()
+ 
++            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
++            time.sleep(1600)
++            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true" % (IP, PORT))
++            time.sleep(400)
++            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/MotionMark1.3.1/index.html" % (IP, PORT))
++            time.sleep(360)
++            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
++            time.sleep(10)
+             # Now generate the profile and wait for it to complete
+             for page in PAGES:
+                 driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
+                 timeout = 2
+-                if "Speedometer" in page:
+-                    # The Speedometer[23] test actually runs many tests internally in
+-                    # javascript, so it needs extra time to run through them. The
+-                    # emulator doesn't get very far through the whole suite, but
+-                    # this extra time at least lets some of them process.
+-                    timeout = 360
+                 time.sleep(timeout)
+ 
+             driver.set_context("chrome")
+@@ -270,16 +308,16 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+                 raise Exception("Android App (%s) never quit" % app)
+ 
+             # Pull all the profraw files and en-US.log
+-            adbdevice.pull(outputdir, "/builds/worker/workspace/")
++            adbdevice.pull(outputdir, workspace_dir)
+         except ADBTimeoutError:
+             self.fatal(
+                 "INFRA-ERROR: Failed with an ADBTimeoutError",
+                 EXIT_STATUS_DICT[TBPL_RETRY],
+             )
+ 
+-        profraw_files = glob.glob("/builds/worker/workspace/*.profraw")
++        profraw_files = glob.glob(os.path.join(workspace_dir, "*.profraw"))
+         if not profraw_files:
+-            self.fatal("Could not find any profraw files in /builds/worker/workspace")
++            self.fatal(f"Could not find any profraw files in {workspace_dir}")
+         elif len(profraw_files) == 1:
+             self.fatal(
+                 "Only found 1 profraw file. Did child processes terminate early?"
+@@ -287,8 +325,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+         merge_cmd = [
+             os.path.join(os.environ["MOZ_FETCHES_DIR"], "clang/bin/llvm-profdata"),
+             "merge",
++            "--sparse=true",
+             "-o",
+-            "/builds/worker/workspace/merged.profdata",
++            os.path.join(workspace_dir, "merged.profdata"),
+         ] + profraw_files
+         rc = subprocess.call(merge_cmd)
+         if rc != 0:
+@@ -297,17 +336,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+                 EXIT_STATUS_DICT[TBPL_RETRY],
+             )
+ 
+-        # tarfile doesn't support xz in this version of Python
+-        tar_cmd = [
+-            "tar",
+-            "-acvf",
+-            "/builds/worker/artifacts/profdata.tar.xz",
+-            "-C",
+-            "/builds/worker/workspace",
+-            "merged.profdata",
+-            "en-US.log",
+-        ]
+-        subprocess.check_call(tar_cmd)
+ 
+         httpd.stop()
+ 
+diff --git a/testing/talos/talos/tests/perf-reftest-singletons/util.js b/testing/talos/talos/tests/perf-reftest-singletons/util.js
+index f5b803e..3b2f5eb 100644
+--- a/testing/talos/talos/tests/perf-reftest-singletons/util.js
++++ b/testing/talos/talos/tests/perf-reftest-singletons/util.js
+@@ -82,11 +82,6 @@ function perf_finish() {
+       type: "time",
+       value: end - start,
+     });
+-  } else {
+-    // Running standalone; just alert.
+-    console.log(end);
+-    console.log(start);
+-    alert("Result: " + (end - start).toFixed(2) + " (ms)");
+   }
+ }
+ 

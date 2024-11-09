@@ -19,16 +19,21 @@ cd ${WORK_DIR}
 hg clone --stream --noupdate --config format.generaldelta=true https://hg.mozilla.org/releases/mozilla-esr128 firefox
 pushd firefox
 hg update --clean --config extensions.fsmonitor= ${HG_TAG}
+rm -rf ${GECKO_PATH}/modules/zlib/src/*
 cp -vrf ${REPO_DIR}/custom/* ${GECKO_PATH}/
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
+patch -p1 -N < "${PATCHES_DIR}/lto.patch"
+patch -p1 -N < "${PATCHES_DIR}/visibility.patch"
 
 case $1 in
   windows)
+    patch -p1 -N < "${PATCHES_DIR}/pgo.patch"
     cat ${REPO_DIR}/user.js >> browser/app/profile/firefox.js
     python mach --no-interactive bootstrap --application-choice browser
     hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
     ;;
   android)
+    patch -p1 -N < "${PATCHES_DIR}/android-pgo.patch"
     cat ${REPO_DIR}/user.js >> mobile/android/app/geckoview-prefs.js
     pushd mobile/android/fenix
     sed -i \
@@ -53,7 +58,7 @@ case $1 in
     mkdir -p ~/.config/"Android Open Source Project"
     echo -e "\n[General]\nshowNestedWarning=false" >> ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
-    python mach python python/mozboot/mozboot/android.py --avd-manifest=${REPO_DIR}/android-latest-x86_64.json --no-interactive
+    python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
     ;;
 esac
 

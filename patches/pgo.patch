@@ -1,0 +1,65 @@
+diff --git a/build/pgo/index.html b/build/pgo/index.html
+index 866150c..a714131 100644
+--- a/build/pgo/index.html
++++ b/build/pgo/index.html
+@@ -72,9 +72,10 @@
+     "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
+     "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
+     "talos/tests/perf-reftest-singletons/window-named-property-get.html",
+-    "webkit/PerformanceTests/Speedometer/index.html",
+-    "http://localhost:8000/index.html?startAutomatically=true",
+     "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
++    "webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true",
++    "webkit/PerformanceTests/MotionMark1.3.1/index.html",
++    "webkit/PerformanceTests/JetStream3.0/index.html",
+   ];
+   var defaultInterval = 2000;
+   var idx = 0;
+@@ -87,8 +88,12 @@
+   function loadURL() {
+     var interval = defaultInterval;
+     var testURL = list[idx++];
+-    if (testURL.includes("webkit") || testURL.includes("localhost")) {
++    if (testURL.includes("Speedometer")) {
+       interval = 120000;
++    } else if (testURL.includes("MotionMark") || testURL.includes("JetStream")) {
++      interval = 400000;
++    } else if (testURL.includes("webaudio")) {
++      interval = 5000;
+     }
+     w.close();
+     w = window.open(testURL);
+diff --git a/build/pgo/profileserver.py b/build/pgo/profileserver.py
+index aae5e79..5891e59 100755
+--- a/build/pgo/profileserver.py
++++ b/build/pgo/profileserver.py
+@@ -97,10 +97,6 @@ if __name__ == "__main__":
+     locations = ServerLocations()
+     locations.add_host(host="127.0.0.1", port=PORT, options="primary,privileged")
+ 
+-    old_profraw_files = glob.glob("*.profraw")
+-    for f in old_profraw_files:
+-        os.remove(f)
+-
+     with TemporaryDirectory() as profilePath:
+         # TODO: refactor this into mozprofile
+         profile_data_dir = os.path.join(build.topsrcdir, "testing", "profiles")
+@@ -180,6 +176,10 @@ if __name__ == "__main__":
+             get_crashreports(profilePath, name="Profile initialization")
+             sys.exit(ret)
+ 
++        old_profraw_files = glob.glob("*.profraw")
++        for f in old_profraw_files:
++            os.remove(f)
++
+         jarlog = os.getenv("JARLOG_FILE")
+         if jarlog:
+             env["MOZ_JAR_LOG_FILE"] = os.path.abspath(jarlog)
+@@ -234,6 +234,7 @@ if __name__ == "__main__":
+             merge_cmd = [
+                 llvm_profdata,
+                 "merge",
++                "--sparse=true",
+                 "-o",
+                 merged_profdata,
+             ] + profraw_files
