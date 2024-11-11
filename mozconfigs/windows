@@ -10,6 +10,7 @@ elif test "$CSIR_PGO"; then
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
+    XPGO_LDFLAGS="--lto-cs-profile-file:$topsrcdir/workspace/merged-cs.profdata"
     XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
     XARCH_RUSTFLAGS="-C target-cpu=znver4"
     XOPT_RUSTFLAGS="-C codegen-units=1"
@@ -19,10 +20,10 @@ elif test "$USE_PGO"; then
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
 fi
 
-XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-ffp-contract=fast"
+XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protection=none /clang:-fno-stack-protector /clang:-ffp-contract=fast -mllvm=-enable-ext-tsp-block-placement=1"
 XMSVC_CFLAGS="-O2 -Ob2 -Oi -Ot -Oy -GF -GS- -guard:cf- -guard:ehcont- -Gr -Gw -Gy"
 XCFLAGS="${XMSVC_CFLAGS} ${XARCH_CFLAGS} ${XCLANG_CFLAGS} ${XPGO_CFLAGS}"
-XLDFLAGS="/OPT:REF,ICF"
+XLDFLAGS="/OPT:REF,ICF -mllvm:-enable-ext-tsp-block-placement=1"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
 
 # Build Configs
@@ -66,6 +67,7 @@ ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
 ac_add_options --enable-wasm-memory-control
 ac_add_options --enable-wasm-multi-memory
+ac_add_options --enable-wasm-branch-hinting
 ac_add_options --enable-wasm-simd
 ac_add_options --enable-wasm-relaxed-simd
 ac_add_options --enable-wasm-avx
@@ -82,6 +84,7 @@ ac_add_options --disable-accessibility
 ac_add_options --disable-bits-download
 ac_add_options --disable-crashreporter
 ac_add_options --disable-dmd
+ac_add_options --disable-phc
 ac_add_options --disable-maintenance-service
 ac_add_options --disable-parental-controls
 ac_add_options --disable-update-agent
