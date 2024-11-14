@@ -1,17 +1,17 @@
 diff --git a/testing/mozharness/configs/android/android-aarch64-profile-generation.py b/testing/mozharness/configs/android/android-aarch64-profile-generation.py
-index acbe1af..4752235 100644
+index acbe1af..0ffb132 100644
 --- a/testing/mozharness/configs/android/android-aarch64-profile-generation.py
 +++ b/testing/mozharness/configs/android/android-aarch64-profile-generation.py
-@@ -12,24 +12,22 @@ config = {
+@@ -12,7 +12,7 @@ config = {
      "emulator_process_name": "qemu-system-x86_64",
      "emulator_extra_args": [
          "-gpu",
 -        "on",
 +        "host",
          "-skip-adb-auth",
--        "-verbose",
--        "-show-kernel",
--        "-ranchu",
+         "-verbose",
+         "-show-kernel",
+@@ -20,16 +20,17 @@ config = {
          "-selinux",
          "permissive",
          "-memory",
@@ -33,10 +33,18 @@ index acbe1af..4752235 100644
      "exes": {
          "adb": "%(abs_sdk_dir)s/platform-tools/adb",
 diff --git a/testing/mozharness/scripts/android_emulator_pgo.py b/testing/mozharness/scripts/android_emulator_pgo.py
-index 885c486..ee40951 100644
+index 885c486..d196328 100644
 --- a/testing/mozharness/scripts/android_emulator_pgo.py
 +++ b/testing/mozharness/scripts/android_emulator_pgo.py
-@@ -24,8 +24,6 @@ from mozharness.mozilla.testing.android import AndroidMixin
+@@ -10,6 +10,7 @@ import glob
+ import json
+ import os
+ import posixpath
++import psutil
+ import subprocess
+ import sys
+ import time
+@@ -24,8 +25,6 @@ from mozharness.mozilla.testing.android import AndroidMixin
  from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
  
  PAGES = [
@@ -45,7 +53,7 @@ index 885c486..ee40951 100644
      "blueprint/sample.html",
      "blueprint/forms.html",
      "blueprint/grid.html",
-@@ -58,6 +56,40 @@ PAGES = [
+@@ -58,6 +57,40 @@ PAGES = [
      "js-input/sunspider/string-tagcloud.html",
      "js-input/sunspider/string-unpack-code.html",
      "js-input/sunspider/string-validate-input.html",
@@ -86,7 +94,36 @@ index 885c486..ee40951 100644
  ]
  
  
-@@ -143,7 +175,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -93,6 +126,28 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+         self.installer_path = c.get("installer_path")
+         self.device_serial = "emulator-5554"
+ 
++
++    def wait_for_emulator(self, threshold=20, duration=5):
++        qemu_process = None
++        for proc in psutil.process_iter(attrs=['name']):
++            if proc.info['name'] == 'qemu-system-x86_64':
++                qemu_process = proc
++                break
++        if not qemu_process:
++            return False
++        consecutive_low_usage = 0
++        while True:
++            try:
++                if qemu_process.cpu_percent(interval=1) < threshold:
++                    consecutive_low_usage += 1
++                    if consecutive_low_usage >= duration:
++                        return True
++                else:
++                    consecutive_low_usage = 0
++            except (psutil.NoSuchProcess, psutil.AccessDenied):
++                return False
++
++
+     def query_abs_dirs(self):
+         if self.abs_dirs:
+             return self.abs_dirs
+@@ -143,7 +198,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
          assert (
              self.installer_path is not None
          ), "Either add installer_path to the config or use --installer-path."
@@ -95,7 +132,7 @@ index 885c486..ee40951 100644
          self.info("Finished installing apps for %s" % self.device_serial)
  
      def run_tests(self):
-@@ -163,6 +195,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -163,6 +218,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
  
          PATH_MAPPINGS = {
              "/js-input/webkit/PerformanceTests": "third_party/webkit/PerformanceTests",
@@ -103,7 +140,7 @@ index 885c486..ee40951 100644
          }
  
          dirs = self.query_abs_dirs()
-@@ -216,7 +249,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -216,7 +272,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
          if not self.symbols_path:
              self.symbols_path = os.environ.get("MOZ_FETCHES_DIR")
  
@@ -113,18 +150,18 @@ index 885c486..ee40951 100644
  
          try:
              # Run Fennec a first time to initialize its profile
-@@ -233,16 +268,18 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -233,16 +291,18 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
              )
              driver.start_session()
  
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
-+            time.sleep(1700)
++            self.wait_for_emulator()
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true" % (IP, PORT))
-+            time.sleep(500)
++            self.wait_for_emulator()
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/MotionMark1.3.1/index.html" % (IP, PORT))
-+            time.sleep(360)
++            self.wait_for_emulator()
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" % (IP, PORT))
-+            time.sleep(10)
++            self.wait_for_emulator()
              # Now generate the profile and wait for it to complete
              for page in PAGES:
                  driver.navigate("http://%s:%d/%s" % (IP, PORT, page))
@@ -138,7 +175,7 @@ index 885c486..ee40951 100644
                  time.sleep(timeout)
  
              driver.set_context("chrome")
-@@ -270,45 +307,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -270,45 +330,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                  raise Exception("Android App (%s) never quit" % app)
  
              # Pull all the profraw files and en-US.log
