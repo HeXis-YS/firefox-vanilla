@@ -38,6 +38,7 @@ case $1 in
   android)
     rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python mach build
+    rm -rf workspace/*.profraw
     sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
     MOZ_FETCHES_DIR=${MOZBUILD_DIR} python mach python testing/mozharness/scripts/android_emulator_pgo.py \
       --config-file testing/mozharness/configs/android/android_common.py \
@@ -45,12 +46,31 @@ case $1 in
       --config-file testing/mozharness/configs/android/android_pgo.py \
       --installer-path obj-aarch64-unknown-linux-android/gradle/build/mobile/android/test_runner/outputs/apk/withGeckoBinaries/debug/test_runner-withGeckoBinaries-debug.apk
     ${MOZBUILD_DIR}/android-sdk-linux/platform-tools/adb -s emulator-5554 emu kill
+    pushd workspace
+    ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true *.profraw -o merged.profdata
+    popd
+
+    rm -rf obj-aarch64-unknown-linux-android
+    CSIR_PGO=1 python mach build
+    rm -rf workspace/*.profraw
+    sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
+    MOZ_FETCHES_DIR=${MOZBUILD_DIR} python mach python testing/mozharness/scripts/android_emulator_pgo.py \
+      --config-file testing/mozharness/configs/android/android_common.py \
+      --config-file testing/mozharness/configs/android/android-aarch64-profile-generation.py \
+      --config-file testing/mozharness/configs/android/android_pgo.py \
+      --installer-path obj-aarch64-unknown-linux-android/gradle/build/mobile/android/test_runner/outputs/apk/withGeckoBinaries/debug/test_runner-withGeckoBinaries-debug.apk
+    ${MOZBUILD_DIR}/android-sdk-linux/platform-tools/adb -s emulator-5554 emu kill
+    pushd workspace
+    ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
+    popd
+
     rm -rf obj-aarch64-unknown-linux-android
     USE_PGO=1 python mach build
     pushd mobile/android/fenix
     ./gradlew assembleRelease
     popd
-    cp -vr workspace ${WORK_DIR}/release
+    mkdir -p workspace
+    cp -vr workspace/* ${WORK_DIR}/release/
     cp -v mobile/android/fenix/app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/
     ;;
 esac

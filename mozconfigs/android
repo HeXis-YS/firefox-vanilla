@@ -1,19 +1,22 @@
+XARCH_CFLAGS="-march=armv8-a+aes+crc+sha2+crypto"
+XARCH_RUSTFLAGS="-Ctarget-feature=+aes -Ctarget-feature=+crc -Ctarget-feature=+sha2 -Ctarget-feature=+crypto"
+XOPT_RUSTFLAGS="-Clto=no"
 if test "$GEN_PGO"; then
-    XARCH_CFLAGS="-march=armv8-a+crc"
     ac_add_options --enable-profile-generate=cross
-elif test "$USE_PGO"; then
-    XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
-    XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
-    XOPT_RUSTFLAGS="-C codegen-units=1"
-    ac_add_options --enable-lto=cross,full
+elif test "$CSIR_PGO"; then
+    XPGO_CFLAGS="-fcs-profile-generate -DMOZ_PROFILE_GENERATE"
+    XPGO_RUSTFLAGS="-Cllvm-args=--cs-profile-generate"
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
-else
+elif test "$USE_PGO"; then
     XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
-    XARCH_RUSTFLAGS="-C target-cpu=cortex-a55 -C target-feature=+crypto -C target-feature=+ssbs" # Comma is not supported
-    #XOPT_RUSTFLAGS="-C codegen-units=1"
-    #ac_add_options --enable-lto=cross,full
+    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-a55 -Ctarget-feature=+crypto -Ctarget-feature=+ssbs"
+    XOPT_RUSTFLAGS="-Ccodegen-units=1"
+    ac_add_options --enable-lto=cross,full
+    ac_add_options --enable-profile-use=cross
+    ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
+    ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
 fi
 
 if test "$USE_MIMALLOC"; then
@@ -21,9 +24,9 @@ if test "$USE_MIMALLOC"; then
 fi
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
 XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
-XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS}"
-XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${MIMALLOC_FLAGS} -s -Wl,-O2"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
+XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} -mllvm=-enable-ext-tsp-block-placement=1"
+XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} ${MIMALLOC_FLAGS} -s -Wl,-O2,--mllvm=-enable-ext-tsp-block-placement=1"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} ${XPGO_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
@@ -49,7 +52,7 @@ ac_add_options --disable-gtest-in-build
 
 # Optimization settings
 ac_add_options --enable-release
-ac_add_options --enable-strip
+# ac_add_options --enable-strip
 ac_add_options --enable-install-strip
 ac_add_options --enable-minify=properties
 ac_add_options --enable-clang-plugin
@@ -63,10 +66,10 @@ ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
 ac_add_options --enable-wasm-memory-control
 ac_add_options --enable-wasm-multi-memory
+ac_add_options --enable-wasm-branch-hinting
 ac_add_options --enable-wasm-simd
 ac_add_options --enable-wasm-relaxed-simd
-export MOZ_OPTIMIZE=1
-export STRIP_CFLAGS="-s"
+# ac_add_options --enable-wasm-avx
 
 # Security
 ac_add_options --disable-hardening
@@ -75,10 +78,14 @@ ac_add_options --without-wasm-sandboxed-libraries
 
 # Disable Modules
 # ac_add_options --disable-accessibility # Cause a build error
+# ac_add_options --disable-bits-download
 ac_add_options --disable-crashreporter
 ac_add_options --disable-dmd
+ac_add_options --disable-phc
+# ac_add_options --disable-maintenance-service
 ac_add_options --disable-nodejs
 ac_add_options --disable-parental-controls
+# ac_add_options --disable-update-agent
 ac_add_options --disable-updater
 ac_add_options --disable-synth-speechd
 ac_add_options --disable-webspeech
@@ -87,6 +94,7 @@ ac_add_options --disable-valgrind
 
 # Media settings
 ac_add_options --enable-av1
+# ac_add_options --enable-eme=widevine
 ac_add_options --enable-jxl
 ac_add_options --enable-raw
 ac_add_options --enable-webrtc
@@ -96,10 +104,6 @@ mk_add_options MOZ_CRASHREPORTER=0
 mk_add_options MOZ_DATA_REPORTING=0
 mk_add_options MOZ_SERVICES_HEALTHREPORT=0
 mk_add_options MOZ_TELEMETRY_REPORTING=0
-
-# API Keys
-# ac_add_options --with-google-location-service-api-keyfile=@TOPSRCDIR@/ga
-# ac_add_options --with-google-safebrowsing-api-keyfile=@TOPSRCDIR@/ga
 
 # Branding
 export MOZILLA_OFFICIAL=1
@@ -117,10 +121,3 @@ export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
 export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
 export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
 # export VERBOSE=1
-
-# Incompatible
-# ac_add_options --disable-bits-download
-# ac_add_options --disable-maintenance-service
-# ac_add_options --enable-wasm-avx
-# ac_add_options --disable-update-agent
-# ac_add_options --enable-eme=widevine

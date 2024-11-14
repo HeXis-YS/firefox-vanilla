@@ -33,6 +33,7 @@ case $1 in
     hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
     ;;
   android)
+    patch -p1 -N < "${PATCHES_DIR}/binary-check.patch"
     patch -p1 -N < "${PATCHES_DIR}/android-pgo.patch"
     cat ${REPO_DIR}/user.js >> mobile/android/app/geckoview-prefs.js
     pushd mobile/android/fenix
