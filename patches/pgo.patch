@@ -1,36 +1,64 @@
 diff --git a/build/pgo/index.html b/build/pgo/index.html
-index 866150c..a714131 100644
+index 866150c..cf1175d 100644
 --- a/build/pgo/index.html
 +++ b/build/pgo/index.html
-@@ -72,9 +72,10 @@
+@@ -6,6 +6,9 @@
+   /* global Quitter */
+ 
+   var list = [
++    "webkit/PerformanceTests/JetStream3.0/index.html",
++    "webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true",
++    "webkit/PerformanceTests/MotionMark1.3.1/index.html",
+     "blueprint/elements.html",
+     "blueprint/forms.html",
+     "blueprint/grid.html",
+@@ -72,14 +75,18 @@
      "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
      "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
      "talos/tests/perf-reftest-singletons/window-named-property-get.html",
 -    "webkit/PerformanceTests/Speedometer/index.html",
 -    "http://localhost:8000/index.html?startAutomatically=true",
      "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
-+    "webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true",
-+    "webkit/PerformanceTests/MotionMark1.3.1/index.html",
-+    "webkit/PerformanceTests/JetStream3.0/index.html",
    ];
    var defaultInterval = 2000;
    var idx = 0;
-@@ -87,8 +88,12 @@
+   var w;
+ 
++  window.addEventListener("message", function (event) {
++    if (event.data === "testCompleted") {
++      loadURL();
++    }
++  }, false);
++
+   window.onload = function () {
+     w = window.open("about:blank");
+     window.setTimeout(loadURL, defaultInterval);
+@@ -87,18 +94,18 @@
    function loadURL() {
      var interval = defaultInterval;
      var testURL = list[idx++];
 -    if (testURL.includes("webkit") || testURL.includes("localhost")) {
-+    if (testURL.includes("Speedometer")) {
-       interval = 120000;
-+    } else if (testURL.includes("MotionMark") || testURL.includes("JetStream")) {
-+      interval = 400000;
-+    } else if (testURL.includes("webaudio")) {
+-      interval = 120000;
++    if (testURL.includes("webaudio")) {
 +      interval = 5000;
      }
      w.close();
      w = window.open(testURL);
+     // Prevent the perf-reftest-singletons from calling alert()
+     w.tpRecordTime = function () {};
+ 
+-    if (idx < list.length) {
+-      window.setTimeout(loadURL, interval);
+-    } else {
++    if (idx >= list.length) {
+       window.setTimeout(Quitter.quit, interval);
++    } else if (idx > 3) {
++      window.setTimeout(loadURL, interval);
+     }
+   }
+   var i;
 diff --git a/build/pgo/profileserver.py b/build/pgo/profileserver.py
-index aae5e79..5891e59 100755
+index aae5e79..7266951 100755
 --- a/build/pgo/profileserver.py
 +++ b/build/pgo/profileserver.py
 @@ -97,10 +97,6 @@ if __name__ == "__main__":

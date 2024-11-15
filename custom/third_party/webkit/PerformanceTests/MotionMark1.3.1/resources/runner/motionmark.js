@@ -429,6 +429,8 @@ window.benchmarkRunnerClient = {
     didFinishLastIteration: function()
     {
         benchmarkController.showResults();
+        if (window.opener && !window.opener.closed)
+            window.opener.postMessage("testCompleted", "*");
     }
 };
 

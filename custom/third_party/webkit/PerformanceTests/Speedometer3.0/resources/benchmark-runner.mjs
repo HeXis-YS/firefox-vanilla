@@ -350,6 +350,9 @@ export class BenchmarkRunner {
 
         if (this._client?.didFinishLastIteration)
             await this._client.didFinishLastIteration(this._metrics);
+
+        if (window.opener && !window.opener.closed)
+            window.opener.postMessage("testCompleted", "*");
     }
 
     _removeFrame() {

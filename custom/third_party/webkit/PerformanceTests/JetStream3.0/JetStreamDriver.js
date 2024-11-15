@@ -308,6 +308,9 @@ class Driver {
 
         this.reportScoreToRunBenchmarkRunner();
         this.dumpJSONResultsIfNeeded();
+
+        if (window.opener && !window.opener.closed)
+            window.opener.postMessage("testCompleted", "*");
     }
 
     runCode(string)
