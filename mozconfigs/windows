@@ -1,19 +1,19 @@
 # Enable PGO
 XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
-XARCH_RUSTFLAGS="-C target-cpu=znver4"
-XOPT_RUSTFLAGS="-C lto=no"
+XARCH_RUSTFLAGS="-Ctarget-cpu=znver4"
+XOPT_RUSTFLAGS="-Clto=no"
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate=cross
 elif test "$CSIR_PGO"; then
-    XPGO_CFLAGS="/clang:-fcs-profile-generate"
+    XPGO_CFLAGS="/clang:-fcs-profile-generate -DMOZ_PROFILE_GENERATE"
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
     XPGO_LDFLAGS="--lto-cs-profile-file:$topsrcdir/workspace/merged-cs.profdata"
     XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
-    XARCH_RUSTFLAGS="-C target-cpu=znver4"
-    XOPT_RUSTFLAGS="-C codegen-units=1"
+    XARCH_RUSTFLAGS="-Ctarget-cpu=znver4"
+    XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
@@ -24,7 +24,7 @@ XCLANG_CFLAGS="/clang:-O3 /clang:-fno-common /clang:-fno-plt /clang:-fcf-protect
 XMSVC_CFLAGS="-O2 -Ob2 -Oi -Ot -Oy -GF -GS- -guard:cf- -guard:ehcont- -Gr -Gw -Gy"
 XCFLAGS="${XMSVC_CFLAGS} ${XARCH_CFLAGS} ${XCLANG_CFLAGS} ${XPGO_CFLAGS}"
 XLDFLAGS="/OPT:REF,ICF -mllvm:-enable-ext-tsp-block-placement=1"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -C opt-level=3 -C strip=symbols -C debuginfo=0 -C panic=abort -C control-flow-guard=no"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=browser
@@ -57,8 +57,8 @@ ac_add_options --disable-gtest-in-build
 
 # Optimization settings
 ac_add_options --enable-release
-ac_add_options --enable-strip
-ac_add_options --enable-install-strip
+# ac_add_options --enable-strip
+# ac_add_options --enable-install-strip
 ac_add_options --enable-minify=properties
 ac_add_options --enable-clang-plugin
 ac_add_options --enable-jemalloc
@@ -71,8 +71,6 @@ ac_add_options --enable-wasm-branch-hinting
 ac_add_options --enable-wasm-simd
 ac_add_options --enable-wasm-relaxed-simd
 ac_add_options --enable-wasm-avx
-export MOZ_OPTIMIZE=1
-export STRIP_CFLAGS="-s"
 
 # Security
 ac_add_options --disable-hardening
@@ -106,10 +104,6 @@ mk_add_options MOZ_CRASHREPORTER=0
 mk_add_options MOZ_DATA_REPORTING=0
 mk_add_options MOZ_SERVICES_HEALTHREPORT=0
 mk_add_options MOZ_TELEMETRY_REPORTING=0
-
-# API Keys
-# ac_add_options --with-google-location-service-api-keyfile=@TOPSRCDIR@/ga
-# ac_add_options --with-google-safebrowsing-api-keyfile=@TOPSRCDIR@/ga
 
 # Branding
 export MOZILLA_OFFICIAL=1
