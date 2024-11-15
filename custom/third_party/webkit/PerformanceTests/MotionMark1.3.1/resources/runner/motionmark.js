@@ -532,6 +532,7 @@ window.benchmarkController = {
 
         this._startButton.textContent = Strings.text.runBenchmark;
         this._startButton.disabled = false;
+        this._startButton.click();
     },
 
     determineCanvasSize: function()

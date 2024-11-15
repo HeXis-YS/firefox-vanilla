@@ -33,7 +33,7 @@ index acbe1af..0ffb132 100644
      "exes": {
          "adb": "%(abs_sdk_dir)s/platform-tools/adb",
 diff --git a/testing/mozharness/scripts/android_emulator_pgo.py b/testing/mozharness/scripts/android_emulator_pgo.py
-index 885c486..d196328 100644
+index 885c486..9bbdcda 100644
 --- a/testing/mozharness/scripts/android_emulator_pgo.py
 +++ b/testing/mozharness/scripts/android_emulator_pgo.py
 @@ -10,6 +10,7 @@ import glob
@@ -156,7 +156,7 @@ index 885c486..d196328 100644
  
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/JetStream3.0/index.html" % (IP, PORT))
 +            self.wait_for_emulator()
-+            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?startAutomatically=true" % (IP, PORT))
++            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/Speedometer3.0/index.html?tags=all&startAutomatically=true" % (IP, PORT))
 +            self.wait_for_emulator()
 +            driver.navigate("http://%s:%d/js-input/webkit/PerformanceTests/MotionMark1.3.1/index.html" % (IP, PORT))
 +            self.wait_for_emulator()
