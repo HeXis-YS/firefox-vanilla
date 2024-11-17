@@ -26,7 +26,7 @@ XWARNING_CFLAGS="-Wno-unused-command-line-argument"
 XOPT_CFLAGS="-O3 -fno-semantic-interposition -fno-common -fno-plt -fcf-protection=none -fno-stack-protector -fno-stack-clash-protection"
 XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} -mllvm=-enable-ext-tsp-block-placement=1"
 XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} ${MIMALLOC_FLAGS} -s -Wl,-O2,--mllvm=-enable-ext-tsp-block-placement=1"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} ${XPGO_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} ${XPGO_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no -Cllvm-args=--enable-ext-tsp-block-placement"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
