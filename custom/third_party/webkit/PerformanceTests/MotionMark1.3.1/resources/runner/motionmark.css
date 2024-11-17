@@ -56,10 +56,6 @@ body.showing-test-container {
     overflow: hidden;
 }
 
-body.images-loaded {
-    animation-play-state: running;
-}
-
 @media screen and (min-width: 667px) {
     body {
         font-size: 24px;
@@ -120,10 +116,6 @@ section.selected {
 .logo div {
     transform: skewX(-10deg);
     margin-left: 1em;
-}
-
-body.images-loaded .logo svg {
-    animation-play-state: running;
 }
 
 @media screen and (min-width: 667px) {
@@ -189,10 +181,6 @@ button {
     animation-play-state: paused;
 
     will-change: background-color;
-}
-
-body.images-loaded button {
-    animation-play-state: running;
 }
 
 button:hover {
