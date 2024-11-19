@@ -8,7 +8,7 @@
 - [x] Better PGO Process (Speedometer, MotionMark, JetStream)
 - [x] Betterfox (Fastfox configuration)
 - [x] zlib-ng integration
-- [ ] mimalloc integration (Unstable due to an upstream bug)
+- [ ] ~~mimalloc integration~~
 - [x] Context-sensitive PGO (Not available for Rust code on Windows due to limitations in the Rust toolchain)
 - [ ] Migration from ESR branch to Release branch
 
