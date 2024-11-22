@@ -119,7 +119,6 @@ This is a personal project, but contributions that improve performance or simpli
 - [Webkit](https://github.com/WebKit)
 - [Betterfox](https://github.com/yokoffing/Betterfox)
 - [zlib-ng](https://github.com/zlib-ng/zlib-ng)
-- [mimalloc](https://github.com/microsoft/mimalloc)
 
 ## License
 
