@@ -37,6 +37,7 @@ pref("network.predictor.enabled", false);
 pref("network.predictor.enable-prefetch", false);
 
 /** EXPERIMENTAL ***/
+pref("layout.css.grid-template-masonry-value.enabled", true);
 pref("dom.enable_web_task_scheduling", true);
 
 /****************************************************************************
