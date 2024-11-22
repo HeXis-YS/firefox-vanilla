@@ -1,5 +1,5 @@
 diff --git a/build/pgo/index.html b/build/pgo/index.html
-index 866150c..b8716bd 100644
+index 866150c..d2f52d5 100644
 --- a/build/pgo/index.html
 +++ b/build/pgo/index.html
 @@ -6,6 +6,9 @@
@@ -12,13 +12,19 @@ index 866150c..b8716bd 100644
      "blueprint/elements.html",
      "blueprint/forms.html",
      "blueprint/grid.html",
-@@ -72,14 +75,18 @@
+@@ -72,14 +75,24 @@
      "talos/tests/perf-reftest-singletons/svg-text-getExtentOfChar-1.html",
      "talos/tests/perf-reftest-singletons/tiny-traversal-singleton.html",
      "talos/tests/perf-reftest-singletons/window-named-property-get.html",
 -    "webkit/PerformanceTests/Speedometer/index.html",
 -    "http://localhost:8000/index.html?startAutomatically=true",
      "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30",
++    "https://www.bilibili.com/video/BV16x411D7NK",
++    "https://live.bilibili.com",
++    "https://www.cloudflare.com",
++    "https://www.baidu.com",
++    "https://cn.bing.com",
++    "https://www.bilibili.com",
    ];
    var defaultInterval = 2000;
    var idx = 0;
@@ -33,13 +39,15 @@ index 866150c..b8716bd 100644
    window.onload = function () {
      w = window.open("about:blank");
      window.setTimeout(loadURL, defaultInterval);
-@@ -87,18 +94,18 @@
+@@ -87,18 +100,20 @@
    function loadURL() {
      var interval = defaultInterval;
      var testURL = list[idx++];
 -    if (testURL.includes("webkit") || testURL.includes("localhost")) {
 -      interval = 120000;
-+    if (testURL.includes("webaudio")) {
++    if (testURL === "https://www.bilibili.com/video/BV16x411D7NK" || testURL === "https://live.bilibili.com") {
++      interval = 30000;
++    } else if (testURL === "webkit/PerformanceTests/webaudio/index.html?raptor&rendering-buffer-length=30" || testURL.includes("https")) {
 +      interval = 5000;
      }
      w.close();

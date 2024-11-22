@@ -70,3 +70,8 @@ pref("breakpad.reportURL", "");
 pref("browser.tabs.crashReporting.sendReport", false);
 pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
 
+/****************************************************************************
+ * SECTION: CUSTOM                                                          *
+****************************************************************************/
+
+pref("network.http.http3.enable", false);
