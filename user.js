@@ -43,6 +43,15 @@ pref("dom.enable_web_task_scheduling", true);
 /****************************************************************************
  * SECTION: SECUREFOX                                                       *
 ****************************************************************************/
+/** TRACKING PROTECTION ***/
+user_pref("browser.contentblocking.category", "strict");
+
+/** OCSP & CERTS / HPKP ***/
+user_pref("security.OCSP.enabled", 0);
+
+/** SSL / TLS ***/
+user_pref("browser.xul.error_pages.expert_bad_cert", true);
+
 /** TELEMETRY ***/
 pref("datareporting.policy.dataSubmissionEnabled", false);
 pref("datareporting.healthreport.uploadEnabled", false);
