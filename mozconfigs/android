@@ -22,7 +22,7 @@ fi
 XWARNING_CFLAGS="-Wno-unused-command-line-argument"
 XOPT_CFLAGS="-O3 -fno-stack-protector"
 XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} -mllvm=-enable-ext-tsp-block-placement=1"
-XLDFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} ${XPGO_CFLAGS} -s -Wl,--mllvm=-enable-ext-tsp-block-placement=1"
+XLDFLAGS="-s -Wl,--mllvm=-enable-ext-tsp-block-placement=1"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} ${XPGO_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no -Cllvm-args=--enable-ext-tsp-block-placement"
 
 # Build Configs
@@ -58,7 +58,7 @@ if test "$USE_MIMALLOC"; then
 else
     ac_add_options --enable-jemalloc
 fi
-ac_add_options --enable-optimize="${XCFLAGS}"
+ac_add_options --enable-optimize
 ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
 ac_add_options --enable-wasm-memory-control
@@ -112,7 +112,7 @@ mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
 mk_add_options MOZ_PARALLEL_COMPILE=1
 
 # Compiler, Linker, and Rust flags
-# export CPPFLAGS="-DNDEBUG -D_NDEBUG"
+export CPPFLAGS="-DNDEBUG"
 export CFLAGS="${CFLAGS} ${XCFLAGS}"
 export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
 export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
