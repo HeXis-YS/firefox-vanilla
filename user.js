@@ -83,6 +83,10 @@ pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
 /****************************************************************************
  * SECTION: CUSTOM                                                          *
 ****************************************************************************/
+// Disable translation
+pref("browser.translations.enable", false);
+pref("browser.translations.panelShown", false);
+
 // Disable HTTP/3
 pref("network.http.http3.enable", false);
 
