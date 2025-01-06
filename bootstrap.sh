@@ -5,8 +5,8 @@ fi
 
 source $(dirname $0)/paths.sh
 
-HG_TAG="FIREFOX_128_3_1esr_RELEASE"
-VERSION_STRING="128.3.1 ESR"
+HG_TAG="FIREFOX_128_5_2esr_RELEASE"
+VERSION_STRING="128.5.2 ESR"
 
 if [[ $(uname) == "Linux" ]]; then
   sudo apt update
