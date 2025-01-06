@@ -74,5 +74,21 @@ pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
 /****************************************************************************
  * SECTION: CUSTOM                                                          *
 ****************************************************************************/
-
+// Disable HTTP/3
 pref("network.http.http3.enable", false);
+
+// Disable insecure and inefficient cipher suites
+pref("security.ssl3.ecdhe_ecdsa_aes_128_sha", false);
+pref("security.ssl3.ecdhe_ecdsa_aes_256_gcm_sha384", false);
+pref("security.ssl3.ecdhe_ecdsa_aes_256_sha", false);
+pref("security.ssl3.ecdhe_ecdsa_chacha20_poly1305_sha256", false);
+pref("security.ssl3.ecdhe_rsa_aes_128_sha", false);
+pref("security.ssl3.ecdhe_rsa_aes_256_gcm_sha384", false);
+pref("security.ssl3.ecdhe_rsa_aes_256_sha", false);
+pref("security.ssl3.ecdhe_rsa_chacha20_poly1305_sha256", false);
+pref("security.ssl3.rsa_aes_128_gcm_sha256", false);
+pref("security.ssl3.rsa_aes_128_sha", false);
+pref("security.ssl3.rsa_aes_256_gcm_sha384", false);
+pref("security.ssl3.rsa_aes_256_sha", false);
+pref("security.tls13.aes_256_gcm_sha384", false);
+pref("security.tls13.chacha20_poly1305_sha256", false);
