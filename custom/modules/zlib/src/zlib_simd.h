@@ -46,7 +46,7 @@
 #define ARM_NEON_HASLD4
 #endif
 
-#if defined(__ARM_ACLE) && defined(__ARM_FEATURE_CRC32)
+#if defined(__ARM_ACLE) || defined(__ARM_FEATURE_CRC32)
 #define ARM_ACLE
 #endif
 

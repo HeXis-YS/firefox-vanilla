@@ -58,6 +58,7 @@ if CONFIG["TARGET_CPU"] == "x86_64":
         'arch/x86/adler32_sse42.c',
         'arch/x86/adler32_ssse3.c',
         'arch/x86/chunkset_avx2.c',
+        'arch/x86/chunkset_avx512.c',
         'arch/x86/chunkset_sse2.c',
         'arch/x86/chunkset_ssse3.c',
         'arch/x86/compare256_avx2.c',
@@ -67,8 +68,7 @@ if CONFIG["TARGET_CPU"] == "x86_64":
         'arch/x86/slide_hash_avx2.c',
         'arch/x86/slide_hash_sse2.c',
     ]
-
-if CONFIG["TARGET_CPU"] == "aarch64":
+elif CONFIG["TARGET_CPU"] == "aarch64":
     DEFINES["HAVE_ARM_ACLE_H"] = True
     SOURCES += [
         'arch/arm/adler32_neon.c',
