@@ -69,7 +69,7 @@ case $1 in
     pushd mobile/android/fenix
     ./gradlew assembleRelease
     popd
-    mkdir -p workspace
+    mkdir -p ${WORK_DIR}/release
     cp -vr workspace/* ${WORK_DIR}/release/
     cp -v mobile/android/fenix/app/build/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk ${WORK_DIR}/release/
     ;;
