@@ -24,6 +24,7 @@ cp -vrf ${REPO_DIR}/custom/* ${GECKO_PATH}/
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
 patch -p1 -N < "${PATCHES_DIR}/lto.patch"
 patch -p1 -N < "${PATCHES_DIR}/visibility.patch"
+patch -p1 -N < "${PATCHES_DIR}/csir-pgo.patch"
 
 case $1 in
   windows)

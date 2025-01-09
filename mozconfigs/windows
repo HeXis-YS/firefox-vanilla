@@ -5,14 +5,12 @@ XOPT_RUSTFLAGS="-Clto=no"
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate=cross
 elif test "$CSIR_PGO"; then
-    XPGO_CFLAGS=" -DMOZ_PROFILE_GENERATE /clang:-fcs-profile-generate -mllvm=-pgo-temporal-instrumentation"
-    ac_add_options --enable-profile-use=cross
+    ac_add_options --enable-profile-generate
+    ac_add_options --enable-profile-generate-cs
+    ac_add_options --enable-profile-use
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
-    XPGO_LDFLAGS="--lto-cs-profile-file:$topsrcdir/workspace/merged-cs.profdata"
-    XARCH_CFLAGS="/clang:-march=znver4 /clang:-mtune=znver4"
-    XARCH_RUSTFLAGS="-Ctarget-cpu=znver4"
     XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
@@ -22,7 +20,7 @@ fi
 
 XCLANG_CFLAGS="/clang:-O3 /clang:-fno-stack-protector /clang:-ffp-contract=fast -mllvm=-enable-ext-tsp-block-placement=1"
 XMSVC_CFLAGS="-Gr"
-XCFLAGS="${XMSVC_CFLAGS} ${XARCH_CFLAGS} ${XCLANG_CFLAGS} ${XPGO_CFLAGS}"
+XCFLAGS="${XMSVC_CFLAGS} ${XARCH_CFLAGS} ${XCLANG_CFLAGS}"
 XLDFLAGS="/OPT:REF,ICF -mllvm:-enable-ext-tsp-block-placement=1"
 XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no -Cllvm-args=--enable-ext-tsp-block-placement"
 
