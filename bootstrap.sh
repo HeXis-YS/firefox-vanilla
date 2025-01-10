@@ -36,6 +36,7 @@ case $1 in
   android)
     patch -p1 -N < "${PATCHES_DIR}/binary-check.patch"
     patch -p1 -N < "${PATCHES_DIR}/android-pgo.patch"
+    patch -p1 -N < "${PATCHES_DIR}/android.patch"
     cat ${REPO_DIR}/user.js >> mobile/android/app/geckoview-prefs.js
     pushd mobile/android/fenix
     sed -i \
