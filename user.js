@@ -44,13 +44,13 @@ pref("dom.enable_web_task_scheduling", true);
  * SECTION: SECUREFOX                                                       *
 ****************************************************************************/
 /** TRACKING PROTECTION ***/
-user_pref("browser.contentblocking.category", "strict");
+pref("browser.contentblocking.category", "strict");
 
 /** OCSP & CERTS / HPKP ***/
-user_pref("security.OCSP.enabled", 0);
+pref("security.OCSP.enabled", 0);
 
 /** SSL / TLS ***/
-user_pref("browser.xul.error_pages.expert_bad_cert", true);
+pref("browser.xul.error_pages.expert_bad_cert", true);
 
 /** TELEMETRY ***/
 pref("datareporting.policy.dataSubmissionEnabled", false);
@@ -105,3 +105,16 @@ pref("security.ssl3.rsa_aes_256_gcm_sha384", false);
 pref("security.ssl3.rsa_aes_256_sha", false);
 pref("security.tls13.aes_256_gcm_sha384", false);
 pref("security.tls13.chacha20_poly1305_sha256", false);
+
+// Disable DoH
+pref("doh-rollout.disable-heuristics", true);
+
+// Disable data collection
+pref("datareporting.policy.dataSubmissionEnabled", false);
+pref("datareporting.healthreport.uploadEnabled", false);
+pref("browser.discovery.enabled", false);
+pref("app.shield.optoutstudies.enabled", false);
+pref("dom.private-attribution.submission.enabled", false);
+
+// Disable sponsor sites
+pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
