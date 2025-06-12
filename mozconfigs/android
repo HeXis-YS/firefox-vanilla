@@ -1,17 +1,16 @@
-XARCH_CFLAGS="-march=armv8-a+aes+crc+sha2+crypto"
-XARCH_RUSTFLAGS="-Ctarget-feature=+aes -Ctarget-feature=+crc -Ctarget-feature=+sha2 -Ctarget-feature=+crypto"
+XARCH_RUSTFLAGS="-Ctarget-feature=+crypto -Ctarget-feature=+crc"
 XOPT_RUSTFLAGS="-Clto=no"
+# Do not enable LTO during profile generation build (including CSIR)
+# This will cause errors
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate=cross
 elif test "$CSIR_PGO"; then
-    ac_add_options --enable-profile-generate=cross
-    ac_add_options --enable-profile-generate-cs=cross
+    XPGO_RUSTFLAGS="-Cllvm-args=--cs-profile-generate"
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
-    XARCH_CFLAGS="-mcpu=cortex-a55+crypto+ssbs -mtune=cortex-a55"
-    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-a55 -Ctarget-feature=+crypto -Ctarget-feature=+ssbs"
+    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-a510 -Ctarget-feature=+crypto -Ctarget-feature=+sha3 -Ctarget-feature=-sve -Ctarget-feature=+spe"
     XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
@@ -19,11 +18,7 @@ elif test "$USE_PGO"; then
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
 fi
 
-XWARNING_CFLAGS="-Wno-unused-command-line-argument"
-XOPT_CFLAGS="-O3 -fno-stack-protector"
-XCFLAGS="${XWARNING_CFLAGS} ${XARCH_CFLAGS} ${XOPT_CFLAGS} -mllvm=-enable-ext-tsp-block-placement=1"
-XLDFLAGS="-s -Wl,--mllvm=-enable-ext-tsp-block-placement=1"
-XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no -Cllvm-args=--enable-ext-tsp-block-placement"
+XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
@@ -53,11 +48,7 @@ ac_add_options --enable-release
 ac_add_options --enable-install-strip
 ac_add_options --enable-minify=properties
 ac_add_options --enable-clang-plugin
-if test "$USE_MIMALLOC"; then
-    ac_add_options --disable-jemalloc
-else
-    ac_add_options --enable-jemalloc
-fi
+ac_add_options --enable-jemalloc
 ac_add_options --enable-optimize
 ac_add_options --enable-rust-simd
 ac_add_options --enable-wasm-memory64
@@ -112,9 +103,5 @@ mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
 mk_add_options MOZ_PARALLEL_COMPILE=1
 
 # Compiler, Linker, and Rust flags
-export CPPFLAGS="-DNDEBUG"
-export CFLAGS="${CFLAGS} ${XCFLAGS}"
-export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
-export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
 export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
 # export VERBOSE=1

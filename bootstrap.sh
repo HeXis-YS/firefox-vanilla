@@ -26,7 +26,6 @@ cp -vrf ${REPO_DIR}/custom/* ${GECKO_PATH}/
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
 patch -p1 -N < "${PATCHES_DIR}/lto.patch"
 patch -p1 -N < "${PATCHES_DIR}/visibility.patch"
-patch -p1 -N < "${PATCHES_DIR}/csir-pgo.patch"
 
 case $1 in
   windows)
@@ -64,6 +63,9 @@ case $1 in
     echo -e "\n[General]\nshowNestedWarning=false" >> ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
     python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
+
+    rm ${MOZBUILD_DIR}/clang/bin/clang
+    install -m755 ${REPO_DIR}/android-wrapper.py ${MOZBUILD_DIR}/clang/bin/clang
 
     rustup default 1.81.0
     rustup target add aarch64-linux-android
