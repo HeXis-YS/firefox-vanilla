@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/bash
+set -e
+
 if [[ $1 != "windows" && $1 != "android" ]]; then
     exit 1
 fi

@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/bash
+set -e
+
 if [[ $1 != "windows" && $1 != "android" ]]; then
     exit 1
 fi
@@ -62,6 +64,9 @@ case $1 in
     echo -e "\n[General]\nshowNestedWarning=false" >> ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
     python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
+
+    rustup default 1.81.0
+    rustup target add aarch64-linux-android
     ;;
 esac
 
