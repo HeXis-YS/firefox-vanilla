@@ -33,7 +33,7 @@ index acbe1af..0ffb132 100644
      "exes": {
          "adb": "%(abs_sdk_dir)s/platform-tools/adb",
 diff --git a/testing/mozharness/scripts/android_emulator_pgo.py b/testing/mozharness/scripts/android_emulator_pgo.py
-index 885c486..9bbdcda 100644
+index 885c486..d3dc95f 100644
 --- a/testing/mozharness/scripts/android_emulator_pgo.py
 +++ b/testing/mozharness/scripts/android_emulator_pgo.py
 @@ -10,6 +10,7 @@ import glob
@@ -150,7 +150,7 @@ index 885c486..9bbdcda 100644
  
          try:
              # Run Fennec a first time to initialize its profile
-@@ -233,16 +291,18 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+@@ -233,18 +291,33 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
              )
              driver.start_session()
  
@@ -174,8 +174,23 @@ index 885c486..9bbdcda 100644
 -                    timeout = 360
                  time.sleep(timeout)
  
++            driver.navigate("https://live.bilibili.com")
++            time.sleep(10)
++            driver.navigate("https://www.cloudflare.com")
++            time.sleep(5)
++            driver.navigate("https://www.baidu.com")
++            time.sleep(5)
++            driver.navigate("https://cn.bing.com")
++            time.sleep(5)
++            driver.navigate("https://www.bilibili.com")
++            time.sleep(5)
++            driver.navigate("https://github.com")
++            time.sleep(5)
++
              driver.set_context("chrome")
-@@ -270,45 +330,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
+             driver.execute_script(
+                 """
+@@ -270,45 +343,13 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                  raise Exception("Android App (%s) never quit" % app)
  
              # Pull all the profraw files and en-US.log
