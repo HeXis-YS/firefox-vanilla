@@ -8,9 +8,12 @@
 - [x] Better PGO Process (Speedometer, MotionMark, JetStream)
 - [x] Betterfox (Fastfox configuration)
 - [x] zlib-ng integration
-- [ ] ~~mimalloc integration~~
 - [x] Context-sensitive PGO (Not available for Rust code on Windows due to limitations in the Rust toolchain)
-- [ ] Migration from ESR branch to Release branch
+- [x] Android compiler wrapper
+- [ ] Windows compiler wrapper
+- [ ] Patched libhoudini for AVD
+- [ ] ~~mimalloc integration~~
+- [ ] ~~Migration from ESR branch to Release branch~~
 
 ## Benchmark
 
