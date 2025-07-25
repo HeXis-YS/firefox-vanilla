@@ -10,7 +10,7 @@ elif test "$CSIR_PGO"; then
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
-    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-a510 -Ctarget-feature=+crypto -Ctarget-feature=+sha3 -Ctarget-feature=-sve -Ctarget-feature=+spe"
+    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-x3 -Ztune-cpu=cortex-a510 -Ctarget-feature=+crypto -Ctarget-feature=+sha3 -Ctarget-feature=-sve"
     XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross

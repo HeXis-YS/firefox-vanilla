@@ -67,7 +67,7 @@ case $1 in
     rm ${MOZBUILD_DIR}/clang/bin/clang
     install -m755 ${REPO_DIR}/android-wrapper.py ${MOZBUILD_DIR}/clang/bin/clang
 
-    rustup default 1.81.0
+    rustup default nightly-2024-07-31
     rustup target add aarch64-linux-android
     ;;
 esac
