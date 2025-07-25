@@ -39,7 +39,7 @@ case $1 in
     ;;
   android)
     rm -rf obj-aarch64-unknown-linux-android
-    export PREPEND_FLAGS="-march=armv8-a+crypto+crc"
+    export WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
     GEN_PGO=1 python mach build
     rm -rf workspace/*.profraw
     sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
@@ -68,8 +68,8 @@ case $1 in
     popd
 
     rm -rf obj-aarch64-unknown-linux-android
-    unset PREPEND_FLAGS
-    export APPEND_FLAGS="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    unset WRAPPER_PREPEND
+    export WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
     USE_PGO=1 python mach build
     pushd mobile/android/fenix
     ./gradlew assembleRelease

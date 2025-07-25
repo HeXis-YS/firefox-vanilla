@@ -15,27 +15,27 @@ class CompilerWrapper():
     def parse_custom_flags(self):
         self.args = [item for item in self.args if not item.startswith('-O')]
         self.args += ["-Wno-unused-command-line-argument", "-O3", "-fno-stack-protector", "-s"]
-        if "--target=aarch64-linux-android21" in self.args:
-            if os.getenv("GEN_PGO") is not None:
-                if not any(item.startswith('-fprofile-generate') for item in self.args):
-                    self.args += ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-            elif os.getenv("CSIR_PGO") is not None:
-                if not any(item.startswith('-fprofile-use') for item in self.args):
-                    self.args += ["-fprofile-use=" + os.getenv("GECKO_PATH") + "/workspace/merged.profdata"]
-                self.args += ["-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-            elif os.getenv("USE_PGO") is not None:
-                if not any(item.startswith('-flto') for item in self.args):
-                    self.args += ["-flto"]
-                if not any(item.startswith('-fprofile-use') for item in self.args):
-                    self.args += ["-fprofile-use=" + os.getenv("GECKO_PATH") + "/workspace/merged-cs.profdata"]
-            env_prepend = os.getenv("WRAPPER_PREPEND")
-            if env_prepend is not None:
-                self.args = env_prepend.split() + self.args
-            env_append = os.getenv("WRAPPER_APPEND")
-            if env_append is not None:
-                self.args += env_append.split()
-        else:
+        if not "--target=aarch64-linux-android21" in self.args:
             self.args += ["-march=native"]
+            return
+        def add_flags_if_missing(prefix, flags):
+            if not any(arg.startswith(prefix) for arg in self.args):
+                self.args += flags
+        gecko = os.getenv("GECKO_PATH", "")
+        if os.getenv("GEN_PGO"):
+            add_flags_if_missing("-fprofile-generate", ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"])
+        elif os.getenv("CSIR_PGO"):
+            add_flags_if_missing("-fprofile-use", [f"-fprofile-use={gecko}/workspace/merged.profdata"])
+            self.args += ["-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
+        elif os.getenv("USE_PGO"):
+            add_flags_if_missing("-flto", "-flto")
+            add_flags_if_missing("-fprofile-use", [f"-fprofile-use={gecko}/workspace/merged-cs.profdata"])
+        env_prepend = os.getenv("WRAPPER_PREPEND")
+        if env_prepend:
+            self.args = env_prepend.split() + self.args
+        env_append = os.getenv("WRAPPER_APPEND")
+        if env_append:
+            self.args += env_append.split()
 
     def invoke_compiler(self):
         self.set_real_compiler()
