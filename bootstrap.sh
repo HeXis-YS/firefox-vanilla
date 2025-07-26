@@ -7,20 +7,17 @@ fi
 
 source $(dirname $0)/paths.sh
 
-HG_TAG="FIREFOX_128_5_2esr_RELEASE"
+GIT_BRANCH="FIREFOX_128_5_2esr_RELEASE"
 VERSION_STRING="128.5.2 ESR"
 
 if [[ $(uname) == "Linux" ]]; then
   sudo apt update
-  sudo apt install -y python3 python3-pip python3-venv gcc watchman sccache git
-  python3 -m venv ${WORK_DIR}/venv
-  pip install --upgrade mercurial
+  sudo apt install -y python3 gcc sccache git
 fi
 
 cd ${WORK_DIR}
-hg clone --stream --noupdate --config format.generaldelta=true https://hg.mozilla.org/releases/mozilla-esr128 firefox
+git clone --branch=$GIT_BRANCH --single-branch --depth=1 https://github.com/HeXis-YS/firefox
 pushd firefox
-hg update --clean --config extensions.fsmonitor= ${HG_TAG}
 rm -rf ${GECKO_PATH}/modules/zlib/src/*
 cp -vrf ${REPO_DIR}/custom/* ${GECKO_PATH}/
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
@@ -32,7 +29,8 @@ case $1 in
     patch -p1 -N < "${PATCHES_DIR}/pgo.patch"
     cat ${REPO_DIR}/user.js >> browser/app/profile/firefox.js
     python mach --no-interactive bootstrap --application-choice browser
-    hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
+    hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg-edge.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
+    watchman shutdown-server
     # Setup wrapper
     pip install pyinstaller
     pushd ${REPO_DIR}
@@ -86,7 +84,5 @@ case $1 in
     rustup target add aarch64-linux-android
     ;;
 esac
-
-watchman shutdown-server
 
 popd
