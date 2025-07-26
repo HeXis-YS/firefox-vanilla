@@ -42,8 +42,8 @@ case $1 in
     cp -v obj-x86_64-pc-windows-msvc/dist/install/sea/*.exe ${WORK_DIR}/release/
     ;;
   android)
-    rm -rf obj-aarch64-unknown-linux-android
     export WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
+    rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python mach build
     rm -rf workspace/*.profraw
     sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
@@ -71,9 +71,9 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
-    rm -rf obj-aarch64-unknown-linux-android
     unset WRAPPER_PREPEND
     export WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    rm -rf obj-aarch64-unknown-linux-android
     USE_PGO=1 python mach build
     pushd mobile/android/fenix
     ./gradlew assembleRelease
