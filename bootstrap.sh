@@ -39,6 +39,8 @@ case $1 in
     mv windows-wrapper.exe clang-cl.exe
     popd
     popd
+
+    rustup default 1.81.0
     ;;
   android)
     mkdir -p ~/.gradle
