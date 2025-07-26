@@ -18,7 +18,7 @@ elif test "$USE_PGO"; then
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
 fi
 
-XRUSTFLAGS="${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
+XRUSTFLAGS="-Awarnings ${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android

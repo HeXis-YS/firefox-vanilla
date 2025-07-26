@@ -14,7 +14,7 @@ class CompilerWrapper():
         prepend_flags = []
         append_flags = []
         self.args = [item for item in self.args if not item.startswith('-O')]
-        append_flags += ["-Wno-unused-command-line-argument", "-O3", "-fno-stack-protector", "-s"]
+        append_flags += ["-w", "-O3", "-fno-stack-protector", "-s"]
         if not "--target=aarch64-linux-android21" in self.args:
             append_flags += ["-march=native"]
             return

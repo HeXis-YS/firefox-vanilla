@@ -42,6 +42,7 @@ class CompilerWrapper():
         env_append = os.getenv("WRAPPER_APPEND")
         if env_append:
             append_flags += env_append.split()
+        append_flags += ["-w"]
         self.args = prepend_flags + self.args
         if "--" in self.args:
             idx = self.args.index("--")
