@@ -10,7 +10,7 @@
 - [x] zlib-ng integration
 - [x] Context-sensitive PGO (Not available for Rust code on Windows due to limitations in the Rust toolchain)
 - [x] Android compiler wrapper
-- [ ] Windows compiler wrapper
+- [x] Windows compiler wrapper
 - [ ] Patched libhoudini for AVD
 - [ ] ~~mimalloc integration~~
 - [ ] ~~Migration from ESR branch to Release branch~~

@@ -33,6 +33,20 @@ case $1 in
     cat ${REPO_DIR}/user.js >> browser/app/profile/firefox.js
     python mach --no-interactive bootstrap --application-choice browser
     hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg.mozilla.org/l10n-central/zh-CN ${MOZBUILD_DIR}/l10n-central/zh-CN
+    # Setup wrapper
+    pip install pyinstaller
+    pushd ${REPO_DIR}
+    rm -rf dist
+    pyinstaller --optimize 2 --noupx windows-wrapper.py
+    pyinstaller -y windows-wrapper.spec
+    cp -r dist/windows-wrapper/* ${MOZBUILD_DIR}/clang/bin/
+    pushd ${MOZBUILD_DIR}/clang/bin
+    mv clang.exe clang.real.exe
+    cp windows-wrapper.exe clang.exe
+    cp windows-wrapper.exe clang++.exe
+    mv windows-wrapper.exe clang-cl.exe
+    popd
+    popd
     ;;
   android)
     patch -p1 -N < "${PATCHES_DIR}/binary-check.patch"
@@ -64,8 +78,9 @@ case $1 in
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
     python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
 
-    rm ${MOZBUILD_DIR}/clang/bin/clang
+    rm ${MOZBUILD_DIR}/clang/bin/clang ${MOZBUILD_DIR}/clang/bin/clang++
     install -m755 ${REPO_DIR}/android-wrapper.py ${MOZBUILD_DIR}/clang/bin/clang
+    install -m755 ${REPO_DIR}/android-wrapper.py ${MOZBUILD_DIR}/clang/bin/clang++
 
     rustup default nightly-2024-07-31
     rustup target add aarch64-linux-android

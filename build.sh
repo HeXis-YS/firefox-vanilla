@@ -11,10 +11,13 @@ pushd ${WORK_DIR}/firefox
 
 case $1 in
   windows)
+    rm -rf workspace
+    mkdir -p workspace
+
+    export WRAPPER_APPEND="-march=native"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     GEN_PGO=1 python mach build
     python mach package
-    mkdir workspace
     pushd workspace
     JARLOG_FILE=en-US.log python ../mach python ../build/pgo/profileserver.py
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true *.profraw -o merged.profdata
@@ -28,6 +31,7 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
+    export WRAPPER_APPEND="-march=znver4"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     USE_PGO=1 python mach build
     python mach package
