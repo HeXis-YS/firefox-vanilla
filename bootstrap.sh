@@ -17,6 +17,7 @@ fi
 cd ${WORK_DIR}
 git clone --branch=$GIT_BRANCH --single-branch --depth=1 https://github.com/HeXis-YS/firefox
 pushd firefox
+git submodule update --init --recursive --depth=1
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
 
 case $1 in
