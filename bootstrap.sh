@@ -16,6 +16,9 @@ fi
 
 cd ${WORK_DIR}
 git clone --branch=$GIT_BRANCH --single-branch --depth=1 https://github.com/HeXis-YS/firefox
+if [[ $1 == "android" ]]; then
+  git clone --single-branch --depth=1 https://github.com/HeXis-YS/vendor_google_proprietary_ndk_translation-prebuilt libndk
+fi
 pushd firefox
 git submodule update --init --recursive --depth=1
 cp -vf ${REPO_DIR}/mozconfigs/$1 ${GECKO_PATH}/mozconfig
@@ -47,10 +50,22 @@ case $1 in
     mkdir -p ~/.gradle
     echo "org.gradle.daemon=false" > ~/.gradle/gradle.properties
     yes N | python mach --no-interactive bootstrap --application-choice mobile_android
-    mkdir -p ~/.config/"Android Open Source Project"
-    echo -e "\n[General]\nshowNestedWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
     ln -sf $(basename $(realpath ${MOZBUILD_DIR}/jdk/jdk-*)) ${JAVA_HOME}
+
+    ADB="${MOZBUILD_DIR}/android-sdk-linux/platform-tools/adb -s emulator-5554"
+    mkdir -p ~/.config/"Android Open Source Project"
+    echo -e "[General]\nshowNestedWarning=false\nshowGpuWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
     python mach python python/mozboot/mozboot/android.py --avd-manifest=python/mozboot/mozboot/android-avds/android31-x86_64.json --no-interactive
+    ANDROID_EMULATOR_HOME=${MOZBUILD_DIR}/android-device ${MOZBUILD_DIR}/android-sdk-linux/emulator/emulator -avd mozemulator-android31-x86_64 -skip-adb-auth -selinux permissive -writable-system -memory 8192 -cores 4 -skin 1280x960 -no-snapstorage -no-snapshot -prop ro.test_harness=true -qemu -cpu host -smp cores=4 &
+    $ADB wait-for-device devices
+    $ADB root
+    $ADB remount
+    $ADB reboot
+    $ADB wait-for-device devices
+    $ADB root
+    $ADB remount
+    $ADB push ${WORK_DIR}/libndk/prebuilts/. /system/
+    $ADB emu kill
 
     rm ${MOZBUILD_DIR}/clang/bin/clang ${MOZBUILD_DIR}/clang/bin/clang++
     install -m755 ${REPO_DIR}/android-wrapper.py ${MOZBUILD_DIR}/clang/bin/clang
