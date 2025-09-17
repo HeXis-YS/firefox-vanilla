@@ -75,6 +75,10 @@ case $1 in
     source $HOME/.cargo/env
     rustup default nightly-2025-02-17
     rustup target add aarch64-linux-android
+    pushd $(dirname $(~/.cargo/bin/rustup which rustc))
+    mv rustc rustc.real
+    install -m755 $REPO_DIR/wrappers/android/rust.py rustc
+    popd
     ;;
 esac
 

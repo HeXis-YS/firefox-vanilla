@@ -1,24 +1,15 @@
-XARCH_RUSTFLAGS="-Ctarget-feature=+crypto -Ctarget-feature=+crc"
-XOPT_RUSTFLAGS="-Clto=no"
-# Do not enable LTO during profile generation build (including CSIR)
-# This will cause errors
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate=cross
 elif test "$CSIR_PGO"; then
-    XPGO_RUSTFLAGS="-Cllvm-args=--cs-profile-generate"
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
-    XARCH_RUSTFLAGS="-Ctarget-cpu=cortex-x3 -Ztune-cpu=cortex-a510 -Ctarget-feature=+crypto -Ctarget-feature=+sha3 -Ctarget-feature=-sve"
-    XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
 fi
-
-XRUSTFLAGS="-Awarnings ${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no"
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
@@ -101,7 +92,3 @@ ac_add_options --enable-official-branding
 mk_add_options AUTOCLOBBER=1
 mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
 mk_add_options MOZ_PARALLEL_COMPILE=1
-
-# Compiler, Linker, and Rust flags
-export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
-# export VERBOSE=1

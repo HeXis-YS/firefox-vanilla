@@ -46,6 +46,7 @@ case $1 in
     sudo chown $(stat -c %u:%g ~) /builds
 
     export CLANG_WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
+    export RUST_WRAPPER_APPEND="-C target-feature=+crypto,+crc"
     rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python3 mach build
     rm -rf workspace/*.profraw
@@ -76,6 +77,7 @@ case $1 in
 
     unset CLANG_WRAPPER_PREPEND
     export CLANG_WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    export RUST_WRAPPER_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
     rm -rf obj-aarch64-unknown-linux-android
     USE_PGO=1 python3 mach build
     pushd mobile/android/fenix
