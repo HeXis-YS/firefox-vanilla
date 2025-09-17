@@ -8,7 +8,7 @@ class CompilerWrapper():
         self.real_compiler = None
         self.argv0 = argv[0]
         compiler_path = os.path.dirname(os.path.abspath(__file__))
-        self.real_compiler = os.path.join(compiler_path, "clang-18")
+        self.real_compiler = os.path.join(compiler_path, "clang.real")
 
     def parse_custom_flags(self):
         prepend_flags = []
