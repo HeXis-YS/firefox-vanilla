@@ -13,18 +13,21 @@ class CompilerWrapper():
     def parse_custom_flags(self):
         prepend_flags = []
         append_flags = []
-        append_flags += ["-w", "-O3", "-fno-stack-protector"]
-        if not "--target=aarch64-linux-android21" in self.args:
-            append_flags += ["-march=native"]
+        append_flags += ["-w", "-fno-stack-protector"]
+        if not any(arg.startswith("--target=aarch64-linux-android") for arg in self.args):
+            append_flags += ["-Os", "-march=native"]
             self.args += append_flags
             return
         gecko = os.getenv("GECKO_PATH", "")
-        if os.getenv("GEN_PGO"):
-            append_flags += ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-        elif os.getenv("CSIR_PGO"):
-            append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-        elif os.getenv("USE_PGO"):
-            append_flags += [f"-fprofile-use={gecko}/workspace/merged-cs.profdata", "-flto=full"]
+        if not os.getenv("USE_PGO"):
+            append_flags += ["-Os"]
+            if os.getenv("GEN_PGO"):
+                append_flags += ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"]
+            elif os.getenv("CSIR_PGO"):
+                append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
+        else:
+            append_flags += ["-O3", "-flto=full"]
+            append_flags += [f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
         env_prepend = os.getenv("CLANG_WRAPPER_PREPEND")
         if env_prepend:
             prepend_flags += env_prepend.split()

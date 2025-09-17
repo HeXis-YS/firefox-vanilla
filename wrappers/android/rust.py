@@ -13,9 +13,9 @@ class CompilerWrapper():
     def parse_custom_flags(self):
         if not any(arg.startswith("--crate-name") for arg in self.args):
             return
-        fast_build_flags = ["-C", "codegen-units=16", "-C", "embed-bitcode=no", "-C", "lto=no"]
+        fast_build_flags = ["-C", "opt-level=s", "-C", "codegen-units=16", "-C", "embed-bitcode=no", "-C", "lto=no"]
         prepend_flags = []
-        append_flags = ["-C", "opt-level=3", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
+        append_flags = ["-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
         is_aarch64 = False
         for i in range(len(self.args)):
             if not self.args[i].startswith("--target"):
@@ -36,7 +36,8 @@ class CompilerWrapper():
             elif os.getenv("CSIR_PGO"):
                 append_flags += ["-C", f"profile-use={gecko}/workspace/merged.profdata", "-C", "llvm-args=--cs-profile-generate", "-C", "llvm-args=--pgo-temporal-instrumentation"]
         else:
-            append_flags += ["-C", f"profile-use={gecko}/workspace/merged-cs.profdata", "-C", "codegen-units=1", "-C", "embed-bitcode=yes", "-C", "lto=fat"]
+            append_flags += ["-C", "opt-level=3", "-C", "codegen-units=1", "-C", "embed-bitcode=yes", "-C", "lto=fat"]
+            append_flags += ["-C", f"profile-use={gecko}/workspace/merged-cs.profdata"]
         env_prepend = os.getenv("RUST_WRAPPER_PREPEND")
         if env_prepend:
             prepend_flags += env_prepend.split()
