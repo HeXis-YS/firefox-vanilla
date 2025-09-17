@@ -13,7 +13,7 @@ case $1 in
     rm -rf workspace
     mkdir -p workspace
 
-    export WRAPPER_APPEND="-march=native"
+    export CLANG_WRAPPER_APPEND="-march=native"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     GEN_PGO=1 python3 mach build
     python3 mach package
@@ -30,7 +30,7 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
-    export WRAPPER_APPEND="-march=znver4"
+    export CLANG_WRAPPER_APPEND="-march=znver4"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     USE_PGO=1 python3 mach build
     python3 mach package
@@ -45,7 +45,7 @@ case $1 in
     sudo mkdir /builds
     sudo chown $(stat -c %u:%g ~) /builds
 
-    export WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
+    export CLANG_WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
     rm -rf obj-aarch64-unknown-linux-android
     GEN_PGO=1 python3 mach build
     rm -rf workspace/*.profraw
@@ -74,8 +74,8 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
-    unset WRAPPER_PREPEND
-    export WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    unset CLANG_WRAPPER_PREPEND
+    export CLANG_WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
     rm -rf obj-aarch64-unknown-linux-android
     USE_PGO=1 python3 mach build
     pushd mobile/android/fenix

@@ -29,9 +29,9 @@ case $1 in
     pip install pyinstaller
     pushd $REPO_DIR
     rm -rf dist
-    pyinstaller --optimize 2 --noupx wrappers/windows.py
-    pyinstaller -y windows.spec
-    cp -r dist/windows/. $MOZBUILD_DIR/clang/bin/
+    pyinstaller --optimize 2 --noupx wrappers/windows/clang.py
+    pyinstaller -y clang.spec
+    cp -r dist/clang/. $MOZBUILD_DIR/clang/bin/
     pushd $MOZBUILD_DIR/clang/bin
     mv clang.exe clang.real.exe
     cp windows.exe clang.exe
@@ -70,7 +70,7 @@ case $1 in
     rm -rf /tmp/libndk
 
     mv $MOZBUILD_DIR/clang/bin/clang $MOZBUILD_DIR/clang/bin/clang.real
-    install -m755 $REPO_DIR/wrappers/android.py $MOZBUILD_DIR/clang/bin/clang
+    install -m755 $REPO_DIR/wrappers/android/clang.py $MOZBUILD_DIR/clang/bin/clang
 
     source $HOME/.cargo/env
     rustup default nightly-2025-02-17

@@ -36,10 +36,10 @@ class CompilerWrapper():
             append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
         elif os.getenv("USE_PGO"):
             append_flags += ["-flto=full", f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
-        env_prepend = os.getenv("WRAPPER_PREPEND")
+        env_prepend = os.getenv("CLANG_WRAPPER_PREPEND")
         if env_prepend:
             prepend_flags += env_prepend.split()
-        env_append = os.getenv("WRAPPER_APPEND")
+        env_append = os.getenv("CLANG_WRAPPER_APPEND")
         if env_append:
             append_flags += env_append.split()
         append_flags += ["-w"]
@@ -54,7 +54,7 @@ class CompilerWrapper():
     def invoke_compiler(self):
         self.parse_custom_flags()
         execargs = [self.real_compiler] + self.args
-        # with open(r"C:\Users\HeXis\firefox-vanilla\wrapper-log.txt", "a") as log_file:
+        # with open(r"C:\Users\HeXis\firefox-vanilla\clang-wrapper-log.txt", "a") as log_file:
         #     log_file.write(' '.join(execargs) + '\n')
         result = subprocess.run(execargs)
         sys.exit(result.returncode)
