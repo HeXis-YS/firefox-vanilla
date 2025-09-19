@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 import os
 import sys
+from pathlib import Path
 
 class CompilerWrapper():
     def __init__(self, argv):
         self.args = argv[1:]
         self.real_compiler = None
         self.argv0 = argv[0]
-        compiler_path = os.path.dirname(os.path.abspath(__file__))
-        self.real_compiler = os.path.join(compiler_path, "clang.real")
+        self.real_compiler = Path(__file__).resolve().parent / "clang.real"
 
     def parse_custom_flags(self):
         prepend_flags = []
         append_flags = []
-        append_flags += ["-w", "-fno-stack-protector"]
+        append_flags += ["-g0", "-fno-stack-protector"]
         if not any(arg.startswith("--target=aarch64-linux-android") for arg in self.args):
             append_flags += ["-Os", "-march=native"]
             self.args += append_flags

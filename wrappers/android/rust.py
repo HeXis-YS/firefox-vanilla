@@ -1,28 +1,28 @@
 #!/usr/bin/python3
 import os
 import sys
+from pathlib import Path
 
 class CompilerWrapper():
     def __init__(self, argv):
         self.args = argv[1:]
         self.real_compiler = None
         self.argv0 = argv[0]
-        compiler_path = os.path.dirname(os.path.abspath(__file__))
-        self.real_compiler = os.path.join(compiler_path, "rustc.real")
+        self.real_compiler = Path(__file__).resolve().parent / "rustc.real"
 
     def parse_custom_flags(self):
         if not any(arg.startswith("--crate-name") for arg in self.args):
             return
         fast_build_flags = ["-C", "opt-level=s", "-C", "codegen-units=16", "-C", "embed-bitcode=no", "-C", "lto=no"]
         prepend_flags = []
-        append_flags = ["-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
+        append_flags = ["-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
         is_aarch64 = False
-        for i in range(len(self.args)):
-            if not self.args[i].startswith("--target"):
-                continue
-            if (self.args[i] == "--target" and self.args[i + 1].startswith("aarch64")) or self.args[i][9:].startswith("aarch64"):
+        try:
+            i = self.args.index("--target")
+            if self.args[i + 1] == "aarch64-linux-android":
                 is_aarch64 = True
-                break
+        except:
+            pass
         if not is_aarch64:
             append_flags += fast_build_flags
             append_flags += ["-C", "target-cpu=native"]
@@ -36,7 +36,18 @@ class CompilerWrapper():
             elif os.getenv("CSIR_PGO"):
                 append_flags += ["-C", f"profile-use={gecko}/workspace/merged.profdata", "-C", "llvm-args=--cs-profile-generate", "-C", "llvm-args=--pgo-temporal-instrumentation"]
         else:
-            append_flags += ["-C", "opt-level=3", "-C", "codegen-units=1", "-C", "embed-bitcode=yes", "-C", "lto=fat"]
+            append_flags += ["-C", "opt-level=3", "-C", "codegen-units=1"]
+            disable_lto = False
+            try:
+                i = self.args.index("--crate-name")
+                if self.args[i + 1] in ["audio_thread_priority", "gkrust"]:
+                    disable_lto = True
+            except:
+                pass
+            if disable_lto:
+                append_flags += ["-C", "embed-bitcode=no", "-C", "lto=no"]
+            else:
+                append_flags += ["-C", "embed-bitcode=yes", "-C", "lto=fat"]
             append_flags += ["-C", f"profile-use={gecko}/workspace/merged-cs.profdata"]
         env_prepend = os.getenv("RUST_WRAPPER_PREPEND")
         if env_prepend:
