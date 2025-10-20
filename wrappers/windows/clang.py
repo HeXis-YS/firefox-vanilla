@@ -26,23 +26,33 @@ class CompilerWrapper():
             case 3:
                 prepend_flags += ["--driver-mode=cl"]
         if self.driver_mode == 3:
-            append_flags += ["/clang:-O3", "/clang:-fno-stack-protector", "/clang:-ffp-contract=fast", "/Gr"]
+            append_flags += ["/clang:-fno-stack-protector", "/clang:-ffp-contract=fast", "/Gr"]
         else:
-            append_flags += ["-O3", "-fno-stack-protector", "-ffp-contract=fast"]
-        gecko = os.getenv("GECKO_PATH", "")
-        if os.getenv("GEN_PGO"):
-            append_flags += ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-        elif os.getenv("CSIR_PGO"):
-            append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
-        elif os.getenv("USE_PGO"):
-            append_flags += ["-flto=full", f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
-        env_prepend = os.getenv("CLANG_WRAPPER_PREPEND")
-        if env_prepend:
-            prepend_flags += env_prepend.split()
-        env_append = os.getenv("CLANG_WRAPPER_APPEND")
-        if env_append:
-            append_flags += env_append.split()
-        append_flags += ["-w"]
+            append_flags += ["-fno-stack-protector", "-ffp-contract=fast"]
+        if not any(arg.startswith("-fms-compatibility-version") for arg in self.args):
+            if self.driver_mode == 3:
+                append_flags += ["/O1"]
+            else:
+                append_flags += ["-Os"]
+        else:
+            if self.driver_mode == 3:
+                append_flags += ["/O2"]
+            else:
+                append_flags += ["-O3"]
+            gecko = os.getenv("GECKO_PATH", "")
+            if os.getenv("GEN_PGO"):
+                append_flags += ["-fprofile-generate", "-mllvm=-pgo-temporal-instrumentation"]
+            elif os.getenv("CSIR_PGO"):
+                append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-DMOZ_PROFILE_GENERATE", "-fcs-profile-generate", "-mllvm=-pgo-temporal-instrumentation"]
+            elif os.getenv("USE_PGO"):
+                append_flags += ["-flto=full", f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
+            env_prepend = os.getenv("CLANG_WRAPPER_PREPEND")
+            if env_prepend:
+                prepend_flags += env_prepend.split()
+            env_append = os.getenv("CLANG_WRAPPER_APPEND")
+            if env_append:
+                append_flags += env_append.split()
+            append_flags += ["-w"]
         self.args = prepend_flags + self.args
         if "--" in self.args:
             idx = self.args.index("--")
