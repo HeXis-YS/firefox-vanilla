@@ -27,20 +27,29 @@ case $1 in
 
     # Setup wrapper
     pip install pyinstaller
-    pushd $REPO_DIR
+    pushd $WORK_DIR
     rm -rf dist
-    pyinstaller --optimize 2 --noupx wrappers/windows/clang.py
+    pyinstaller --optimize 2 --noupx $REPO_DIR/wrappers/windows/clang.py
     pyinstaller -y clang.spec
-    cp -r dist/clang/. $MOZBUILD_DIR/clang/bin/
+    pyinstaller --optimize 2 --noupx $REPO_DIR/wrappers/windows/rust.py
+    pyinstaller -y rust.spec
+    popd
+
     pushd $MOZBUILD_DIR/clang/bin
     mv clang.exe clang.real.exe
-    cp windows.exe clang.exe
-    cp windows.exe clang++.exe
-    mv windows.exe clang-cl.exe
-    popd
+    rm -f clang++.exe clang-cl.exe
+    cp -r $WORK_DIR/dist/clang/. ./
+    cp clang.exe clang++.exe
+    cp clang.exe clang-cl.exe
     popd
 
     rustup default nightly-2025-02-17
+
+    pushd $(dirname $(~/.cargo/bin/rustup which rustc))
+    mv rustc.exe rustc.real.exe
+    cp -r $WORK_DIR/dist/rust/. ./
+    mv rust.exe rustc.exe
+    popd
     ;;
   android)
     mkdir -p ~/.gradle

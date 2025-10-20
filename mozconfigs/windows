@@ -1,6 +1,4 @@
 # Enable PGO
-XARCH_RUSTFLAGS="-Ctarget-cpu=native"
-XOPT_RUSTFLAGS="-Clto=no"
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate=cross
 elif test "$CSIR_PGO"; then
@@ -8,8 +6,6 @@ elif test "$CSIR_PGO"; then
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
 elif test "$USE_PGO"; then
-    XARCH_RUSTFLAGS="-Ctarget-cpu=znver4"
-    XOPT_RUSTFLAGS="-Ccodegen-units=1"
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
@@ -17,7 +13,6 @@ elif test "$USE_PGO"; then
 fi
 
 XLDFLAGS="/OPT:REF,ICF"
-XRUSTFLAGS="-Awarnings ${XARCH_RUSTFLAGS} ${XOPT_RUSTFLAGS} -Copt-level=3 -Cstrip=symbols -Cdebuginfo=0 -Cpanic=abort -Ccontrol-flow-guard=no -Cllvm-args=--enable-ext-tsp-block-placement"
 
 # Build Configs
 ac_add_options --enable-project=browser
@@ -108,9 +103,5 @@ mk_add_options MOZ_MAKE_CFLAGS="-j$(nproc)"
 mk_add_options MOZ_PARALLEL_COMPILE=1
 
 # Compiler, Linker, and Rust flags
-# export CPPFLAGS="-DNDEBUG"
-# export CFLAGS="${CFLAGS} ${XCFLAGS}"
-# export CXXFLAGS="${CXXFLAGS} ${XCFLAGS}"
 export LDFLAGS="${LDFLAGS} ${XLDFLAGS}"
-export RUSTFLAGS="${RUSTFLAGS} ${XRUSTFLAGS}"
 # export VERBOSE=1

@@ -14,6 +14,7 @@ case $1 in
     mkdir -p workspace
 
     export CLANG_WRAPPER_APPEND="-march=native"
+    export RUST_WRAPPER_APPEND="-C target-cpu=native"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     GEN_PGO=1 python3 mach build
     python3 mach package
@@ -31,6 +32,7 @@ case $1 in
     popd
 
     export CLANG_WRAPPER_APPEND="-march=znver4"
+    export RUST_WRAPPER_APPEND="-C target-cpu=znver4"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
     USE_PGO=1 python3 mach build
     python3 mach package
