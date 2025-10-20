@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import os
 import sys
-from pathlib import Path
 
 class CompilerWrapper():
     def __init__(self, argv):
@@ -16,14 +15,14 @@ class CompilerWrapper():
         fast_build_flags = ["-C", "opt-level=s", "-C", "codegen-units=16", "-C", "embed-bitcode=no", "-C", "lto=no"]
         prepend_flags = []
         append_flags = ["-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
-        is_aarch64 = False
+        is_target = False
         try:
             i = self.args.index("--target")
             if self.args[i + 1] == "aarch64-linux-android":
-                is_aarch64 = True
+                is_target = True
         except:
             pass
-        if not is_aarch64:
+        if not is_target:
             append_flags += fast_build_flags
             append_flags += ["-C", "target-cpu=native"]
             self.args += append_flags
