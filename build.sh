@@ -6,35 +6,42 @@ fi
 
 source $(dirname $0)/paths.sh
 
+export WRAPPER_WRITE_LOG=1
+rm -f /tmp/clang-wrapper-log.txt /tmp/rust-wrapper-log.txt
+
 pushd ${WORK_DIR}/firefox
 
 case $1 in
   windows)
+    # export TREAT_HOST_AS_TARGET=1
+
     rm -rf workspace
     mkdir -p workspace
 
-    export CLANG_WRAPPER_APPEND="-march=native"
-    export RUST_WRAPPER_APPEND="-C target-cpu=native"
+    export CLANG_WRAPPER_TARGET_APPEND="-march=native"
+    export CLANG_CL_WRAPPER_TARGET_APPEND="-march=native"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=native"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
-    GEN_PGO=1 python3 mach build
+    PGO_STAGE=1 python3 mach build
     python3 mach package
     pushd workspace
-    JARLOG_FILE=en-US.log python ../mach python ../build/pgo/profileserver.py
+    JARLOG_FILE=en-US.log python3 ../mach python ../build/pgo/profileserver.py
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true *.profraw -o merged.profdata
     popd
 
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
-    CSIR_PGO=1 python3 mach build
+    PGO_STAGE=2 python3 mach build
     python3 mach package
     pushd workspace
-    python ../mach python ../build/pgo/profileserver.py
+    python3 ../mach python ../build/pgo/profileserver.py
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
-    export CLANG_WRAPPER_APPEND="-march=znver4"
-    export RUST_WRAPPER_APPEND="-C target-cpu=znver4"
+    export CLANG_WRAPPER_TARGET_APPEND="-march=znver4"
+    export CLANG_CL_WRAPPER_TARGET_APPEND="-march=znver4"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=znver4"
     rm -rf /tmp/* obj-x86_64-pc-windows-msvc
-    USE_PGO=1 python3 mach build
+    PGO_STAGE=3 python3 mach build
     python3 mach package
     python3 mach build installers-zh-CN
 
@@ -47,10 +54,10 @@ case $1 in
     sudo mkdir /builds
     sudo chown $(stat -c %u:%g ~) /builds
 
-    export CLANG_WRAPPER_PREPEND="-march=armv8-a+crypto+crc"
-    export RUST_WRAPPER_APPEND="-C target-feature=+crypto,+crc"
+    export CLANG_WRAPPER_TARGET_PREPEND="-march=armv8-a+crypto+crc"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-feature=+crypto,+crc"
     rm -rf obj-aarch64-unknown-linux-android
-    GEN_PGO=1 python3 mach build
+    PGO_STAGE=1 python3 mach build
     rm -rf workspace/*.profraw
     sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
     MOZ_FETCHES_DIR=${MOZBUILD_DIR} python3 mach python testing/mozharness/scripts/android_emulator_pgo.py \
@@ -64,7 +71,7 @@ case $1 in
     popd
 
     rm -rf obj-aarch64-unknown-linux-android
-    CSIR_PGO=1 python3 mach build
+    PGO_STAGE=2 python3 mach build
     rm -rf workspace/*.profraw
     sed -i '/^$/d' ${MOZBUILD_DIR}/android-device/avd/mozemulator-android*.ini
     MOZ_FETCHES_DIR=${MOZBUILD_DIR} python3 mach python testing/mozharness/scripts/android_emulator_pgo.py \
@@ -77,11 +84,11 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
     popd
 
-    unset CLANG_WRAPPER_PREPEND
-    export CLANG_WRAPPER_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
-    export RUST_WRAPPER_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
+    unset CLANG_WRAPPER_TARGET_PREPEND
+    export CLANG_WRAPPER_TARGET_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
     rm -rf obj-aarch64-unknown-linux-android
-    USE_PGO=1 python3 mach build
+    PGO_STAGE=3 python3 mach build
     pushd mobile/android/fenix
     # unset ANDROID_SDK_ROOT
     ./gradlew assembleRelease

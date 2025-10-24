@@ -37,7 +37,8 @@ case $1 in
 
     pushd $MOZBUILD_DIR/clang/bin
     mv clang.exe clang.real.exe
-    powershell del clang++.exe clang-cl.exe
+    powershell del clang++.exe
+    powershell del clang-cl.exe
     cp -r $WORK_DIR/dist/clang/. ./
     cp clang.exe clang++.exe
     cp clang.exe clang-cl.exe

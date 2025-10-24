@@ -1,11 +1,10 @@
-# Enable PGO
-if test "$GEN_PGO"; then
+if [ "$PGO_STAGE" = "1" ]; then
     ac_add_options --enable-profile-generate=cross
-elif test "$CSIR_PGO"; then
+elif [ "$PGO_STAGE" = "2" ]; then
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
-elif test "$USE_PGO"; then
+elif [ "$PGO_STAGE" = "3" ]; then
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
