@@ -22,8 +22,7 @@ cp -vf $REPO_DIR/mozconfigs/$1 $GECKO_PATH/mozconfig
 case $1 in
   windows)
     python3 mach --no-interactive bootstrap --application-choice browser
-    hg clone --stream --config format.generaldelta=true --config extensions.fsmonitor= https://hg-edge.mozilla.org/l10n-central/zh-CN $MOZBUILD_DIR/l10n-central/zh-CN
-    watchman shutdown-server
+    git clone --depth 1 --single-branch --no-tags https://github.com/mozilla-l10n/firefox-l10n
 
     # Setup wrapper
     pip install pyinstaller

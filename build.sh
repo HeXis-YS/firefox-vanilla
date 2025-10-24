@@ -21,7 +21,7 @@ case $1 in
     export CLANG_WRAPPER_TARGET_APPEND="-march=native"
     export CLANG_CL_WRAPPER_TARGET_APPEND="-march=native"
     export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=native"
-    rm -rf /tmp/* obj-x86_64-pc-windows-msvc
+    rm -rf obj-x86_64-pc-windows-msvc
     PGO_STAGE=1 python3 mach build
     python3 mach package
     pushd workspace
@@ -29,7 +29,7 @@ case $1 in
     ${MOZBUILD_DIR}/clang/bin/llvm-profdata merge --sparse=true *.profraw -o merged.profdata
     popd
 
-    rm -rf /tmp/* obj-x86_64-pc-windows-msvc
+    rm -rf obj-x86_64-pc-windows-msvc
     PGO_STAGE=2 python3 mach build
     python3 mach package
     pushd workspace
@@ -40,10 +40,10 @@ case $1 in
     export CLANG_WRAPPER_TARGET_APPEND="-march=znver4"
     export CLANG_CL_WRAPPER_TARGET_APPEND="-march=znver4"
     export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=znver4"
-    rm -rf /tmp/* obj-x86_64-pc-windows-msvc
+    rm -rf obj-x86_64-pc-windows-msvc
     PGO_STAGE=3 python3 mach build
     python3 mach package
-    python3 mach build installers-zh-CN
+    MOZ_ARTIFACT_FILE=$(realpath obj-x86_64-pc-windows-msvc/dist/$(cat obj-x86_64-pc-windows-msvc/dist/package_name.txt)) python3 mach build installers-zh-CN
 
     mkdir -p ${WORK_DIR}/release
     cp -vr workspace/*.profdata ${WORK_DIR}/release/
