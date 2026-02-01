@@ -12,7 +12,7 @@ class CompilerWrapper():
 
     def parse_custom_flags(self):
         prepend_flags = []
-        append_flags = []
+        append_flags = ["-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
 
         try:
             i = self.args.index("--target")
@@ -20,45 +20,43 @@ class CompilerWrapper():
         except:
             is_target = False
 
-        if is_target:
-            append_flags += ["-C", "opt-level=3", "-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
+        if not is_target:
+            append_flags += ["-C", "opt-level=1", "-C", "codegen-units=16"]
+            self.args += append_flags
+            return
 
-            try:
-                pgo_stage = int(os.getenv("PGO_STAGE", "0"))
-            except ValueError:
-                pgo_stage = 0
+        try:
+            pgo_stage = int(os.getenv("PGO_STAGE", "0"))
+        except ValueError:
+            pgo_stage = 0
 
-            gecko = os.getenv("GECKO_PATH", "")
-            match pgo_stage:
-                case 1 | 2:
-                    append_flags += ["-C", "codegen-units=16"]
-                    append_flags += ["-C", "llvm-args=--pgo-temporal-instrumentation"]
-                    if pgo_stage == 1:
-                        append_flags += ["-C", "profile-generate"]
-                    else:
-                        append_flags += ["-C", f"profile-use={gecko}/workspace/merged.profdata", "-C", "llvm-args=--cs-profile-generate"]
-                case _:
-                    append_flags += ["-C", "codegen-units=1"]
-                    use_lto = True
-                    try:
-                        i = self.args.index("--crate-name")
-                        if self.args[i + 1] in ["audio_thread_priority", "gkrust"]:
-                            use_lto = False
-                    except:
-                        pass
-                    if use_lto:
-                        append_flags += ["-C", "embed-bitcode=yes", "-C", "lto=fat"]
-                    if pgo_stage == 3:
-                        append_flags += ["-C", f"profile-use={gecko}/workspace/merged-cs.profdata"]
+        gecko = os.getenv("GECKO_PATH", "")
+        match pgo_stage:
+            case 1 | 2:
+                append_flags += ["-C", "opt-level=1", "-C", "codegen-units=16"]
+                append_flags += ["-C", "llvm-args=--pgo-temporal-instrumentation"]
+                if pgo_stage == 1:
+                    append_flags += ["-C", "profile-generate"]
+                else:
+                    append_flags += ["-C", f"profile-use={gecko}/workspace/merged.profdata", "-C", "llvm-args=--cs-profile-generate"]
+            case _:
+                append_flags += ["-C", "opt-level=3", "-C", "codegen-units=1"]
+                use_lto = True
+                try:
+                    i = self.args.index("--crate-name")
+                    if self.args[i + 1] in ["audio_thread_priority", "gkrust"]:
+                        use_lto = False
+                except:
+                    pass
+                if use_lto:
+                    append_flags += ["-C", "embed-bitcode=yes", "-C", "lto=fat"]
+                if pgo_stage == 3:
+                    append_flags += ["-C", f"profile-use={gecko}/workspace/merged-cs.profdata"]
 
-            env_prepend = os.getenv("RUST_WRAPPER_TARGET_PREPEND")
-            env_append = os.getenv("RUST_WRAPPER_TARGET_APPEND")
-        else:
-            env_prepend = os.getenv("RUST_WRAPPER_HOST_PREPEND")
-            env_append = os.getenv("RUST_WRAPPER_HOST_APPEND")
-
+        env_prepend = os.getenv("RUST_WRAPPER_TARGET_PREPEND")
         if env_prepend:
             prepend_flags += env_prepend.split()
+        env_append = os.getenv("RUST_WRAPPER_TARGET_APPEND")
         if env_append:
             append_flags += env_append.split()
 

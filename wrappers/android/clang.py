@@ -22,16 +22,19 @@ class CompilerWrapper():
         do_link = not ("-c" in self.args or "-E" in self.args)
 
         prepend_flags = []
-        append_flags = ["-pipe"]
+        append_flags = ["-pipe", "-g0", "-fno-stack-protector", "-fno-plt"]
 
         if not is_target or is_conftest:
+            if is_conftest:
+                append_flags += ["-O0"]
+            else:
+                append_flags += ["-O1"]
             if do_link:
                 append_flags += ["-fuse-ld=mold"]
             self.args += append_flags
             return
 
         append_flags += ["-Wno-unused-command-line-argument"]
-        append_flags += ["-O3", "-g0", "-fno-stack-protector", "-fno-plt"]
         if do_link:
             append_flags += ["-Wl,-O2,--icf=all,--as-needed,--sort-common"]
 
@@ -43,6 +46,7 @@ class CompilerWrapper():
         gecko = os.getenv("GECKO_PATH", "")
         match pgo_stage:
             case 1 | 2:
+                append_flags += ["-O1"]
                 append_flags += ["-DMOZ_PROFILE_GENERATE", "-mllvm=-pgo-temporal-instrumentation"]
                 if do_link:
                     append_flags += ["-fuse-ld=mold"]
@@ -51,6 +55,7 @@ class CompilerWrapper():
                 else:
                     append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata", "-fcs-profile-generate"]
             case _:
+                append_flags += ["-O3"]
                 append_flags += ["-ffunction-sections", "-fdata-sections"]
                 append_flags += ["-flto=full", "-fwhole-program-vtables", "-fvirtual-function-elimination"]
                 if do_link:
