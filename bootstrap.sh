@@ -88,6 +88,10 @@ case $1 in
     # wait
     # rm -rf /tmp/libndk
 
+    # Install mold linker
+    MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
+    curl -fsSL $MOLD_URL | tar --strip-components=1 -C $MOZBUILD_DIR/clang -xzf-
+
     # Setup clang wrapper
     pushd $MOZBUILD_DIR/clang/bin
     install -m0755 $REPO_DIR/wrappers/android/clang.py clang.py

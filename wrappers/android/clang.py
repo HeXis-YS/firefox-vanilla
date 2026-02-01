@@ -19,20 +19,21 @@ class CompilerWrapper():
             if arg_list[-1].startswith("conftest"):
                 is_conftest = True
                 break
+        do_link = not ("-c" in self.args or "-E" in self.args)
 
         prepend_flags = []
         append_flags = ["-pipe"]
 
         if not is_target or is_conftest:
-            self.args = prepend_flags + self.args + append_flags
+            if do_link:
+                append_flags += ["-fuse-ld=mold"]
+            self.args += append_flags
             return
-
-        do_link = not ("-c" in self.args or "-E" in self.args)
 
         append_flags += ["-Wno-unused-command-line-argument"]
         append_flags += ["-O3", "-g0", "-fno-stack-protector", "-fno-plt"]
         if do_link:
-            append_flags += ["-fuse-ld=lld", "-Wl,-O2,--icf=all,--as-needed,--sort-common,-mllvm,-enable-ext-tsp-block-placement=1"]
+            append_flags += ["-Wl,-O2,--icf=all,--as-needed,--sort-common"]
 
         try:
             pgo_stage = int(os.getenv("PGO_STAGE", "0"))
@@ -43,6 +44,8 @@ class CompilerWrapper():
         match pgo_stage:
             case 1 | 2:
                 append_flags += ["-DMOZ_PROFILE_GENERATE", "-mllvm=-pgo-temporal-instrumentation"]
+                if do_link:
+                    append_flags += ["-fuse-ld=mold"]
                 if pgo_stage == 1:
                     append_flags += ["-fprofile-generate"]
                 else:
@@ -51,7 +54,7 @@ class CompilerWrapper():
                 append_flags += ["-ffunction-sections", "-fdata-sections"]
                 append_flags += ["-flto=full", "-fwhole-program-vtables", "-fvirtual-function-elimination"]
                 if do_link:
-                    append_flags += ["-s", "-Wl,--gc-sections"]
+                    append_flags += ["-fuse-ld=lld", "-s", "-Wl,--gc-sections,-mllvm,-enable-ext-tsp-block-placement=1"]
                     append_flags += ["-Wl,--lto-O3,--lto-partitions=1"]
                 if pgo_stage == 3:
                     append_flags += [f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
