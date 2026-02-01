@@ -10,7 +10,7 @@ export PATH="$MOZBUILD_DIR/sccache:$PATH"
 if [[ "$(uname)" == "Linux" ]]; then
   export PATH="$WORK_DIR/venv/bin:$PATH"
   export ANDROID_HOME="$MOZBUILD_DIR/android-sdk-linux"
-  export JAVA_HOME="$MOZBUILD_DIR/jdk/jdk-17.0.15+6"
+  export JAVA_HOME=${JAVA_HOME_17_X64:-$MOZBUILD_DIR/jdk/jdk-17.0.15+6}
 fi
 
 export GRADLE_OPTS="-Dorg.gradle.daemon=false"

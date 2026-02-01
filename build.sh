@@ -50,6 +50,16 @@ case $1 in
     cp -v obj-x86_64-pc-windows-msvc/dist/install/sea/*.exe ${WORK_DIR}/release/
     ;;
   android)
+    pushd microg
+    unset ANDROID_SDK_ROOT
+    ./gradlew -x javaDocReleaseGeneration \
+      :play-services-ads-identifier:publishToMavenLocal \
+      :play-services-base:publishToMavenLocal \
+      :play-services-basement:publishToMavenLocal \
+      :play-services-fido:publishToMavenLocal \
+      :play-services-tasks:publishToMavenLocal
+    popd
+
     sudo rm -rf /builds
     sudo mkdir /builds
     sudo chown $(stat -c %u:%g ~) /builds
