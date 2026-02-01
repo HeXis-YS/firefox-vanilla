@@ -7,17 +7,13 @@
         "-memory", "8192",
         "-cores", "4",
         "-skin", "1280x960",
-        "-writable-system",
-        "-no-snapstorage",
         "-no-audio",
         "-no-window",
         "-no-boot-anim",
-        "-qemu", "-cpu", "host", "-smp", "cores=4"
+        "-qemu", "-enable-kvm", "-cpu", "host", "-smp", "cores=4"
     ],
     "emulator_extra_config": {
         "hw.keyboard": "yes",
-        "hw.lcd.density": "320",
-        "disk.dataPartition.size": "4000MB",
-        "sdcard.size": "600M"
+        "hw.lcd.density": "320"
     }
 }
