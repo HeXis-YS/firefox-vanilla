@@ -1,15 +1,21 @@
-if [ "$PGO_STAGE" = "1" ]; then
+case $PGO_STAGE in
+  1)
     ac_add_options --enable-profile-generate=cross
-elif [ "$PGO_STAGE" = "2" ]; then
+    ;;
+  2)
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
-elif [ "$PGO_STAGE" = "3" ]; then
+    ;;
+  3)
+    ac_add_options --disable-webdriver
+    ac_add_options --enable-elf-hack=relr
     ac_add_options --enable-lto=cross,full
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
-fi
+    ;;
+esac
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
@@ -21,7 +27,6 @@ fi
 
 # Build for Android
 ac_add_options --target=aarch64
-ac_add_options --enable-elf-hack=relr
 
 # Optimization settings
 ac_add_options --enable-install-strip
@@ -29,6 +34,7 @@ ac_add_options --enable-minify=properties
 ac_add_options --enable-wasm-memory-control
 ac_add_options --enable-wasm-branch-hinting
 ac_add_options --enable-wasm-relaxed-simd
+ac_add_options --enable-geckoview-lite
 
 # Security
 ac_add_options --disable-hardening
@@ -40,6 +46,10 @@ ac_add_options --disable-nodejs
 ac_add_options --disable-parental-controls
 ac_add_options --disable-updater
 ac_add_options --disable-webspeech
+ac_add_options --disable-gecko-profiler
+ac_add_options --disable-profiling
+ac_add_options --disable-real-time-tracing
+ac_add_options --disable-printing
 
 # Client settings
 mk_add_options MOZ_CRASHREPORTER=0
