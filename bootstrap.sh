@@ -98,10 +98,10 @@ case $1 in
     ln -nsf $(realpath -s mozbuild) $_MOZBUILD_DIR
 
     pushd $_MOZBUILD_DIR
-      mkdir -p cache
-      mv android-device/avd cache/
+      mkdir -p $_WORK_DIR/mozbuild-cache
+      mv android-device/avd $_WORK_DIR/mozbuild-cache/
+      mv android-sdk-linux/system-images $_WORK_DIR/mozbuild-cache/
       ln -nsf $_TMP_DIR/mozbuild-cache/avd android-device/avd
-      mv android-sdk-linux/system-images cache/
       ln -nsf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
 
       # Install mold linker

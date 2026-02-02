@@ -14,7 +14,7 @@ prepare_obj_dir2() {
 run_pgo_emulator() {
   mv $_TMP_DIR/obj obj
   ln -nsf obj obj-aarch64-unknown-linux-android
-  cp -r $_MOZBUILD_DIR/cache $_TMP_DIR/mozbuild-cache
+  cp -r $_MOZBUILD_DIR/mozbuild-cache $_TMP_DIR/
   rm -rf workspace/*.profraw
   MOZ_FETCHES_DIR=$_MOZBUILD_DIR python3 mach python testing/mozharness/scripts/android_emulator_pgo.py \
     --config-file testing/mozharness/configs/android/android_common.py \
