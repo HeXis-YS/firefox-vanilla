@@ -10,6 +10,7 @@
         "-no-audio",
         "-no-window",
         "-no-boot-anim",
+        "-no-snapstorage",
         "-qemu", "-enable-kvm", "-cpu", "host", "-smp", "cores=4"
     ],
     "emulator_extra_config": {

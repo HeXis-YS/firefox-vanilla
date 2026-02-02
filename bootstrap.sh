@@ -85,8 +85,8 @@ case $1 in
       yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
       rm -rf $_MOZBUILD_DIR/toolchains
 
-      rm -f $_MOZBUILD_DIR
-      mv $_TMP_DIR/mozbuild $_MOZBUILD_DIR
+      mv $_TMP_DIR/mozbuild mozbuild
+      ln -sf $(realpath mozbuild) $_MOZBUILD_DIR
 
       # Setup AVD
       rm -rf $_MOZBUILD_DIR/android-device/avd/. $_MOZBUILD_DIR/android-sdk-linux/system-images/.
