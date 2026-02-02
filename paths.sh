@@ -14,10 +14,6 @@ if [[ "$(uname)" == "Linux" ]]; then
   export PATH="$_WORK_DIR/venv/bin:$PATH"
   export ANDROID_HOME="$_MOZBUILD_DIR/android-sdk-linux"
   unset ANDROID_SDK_ROOT
-  if [ -n $JAVA_HOME_17_X64 ]; then
-    export JAVA_HOME=$JAVA_HOME_17_X64
-  else
-    export JAVA_HOME=$_MOZBUILD_DIR/jdk/jdk-17.0.15+6
-  fi
+  export JAVA_HOME=$_MOZBUILD_DIR/jdk/jdk-17.0.15+6
   export GRADLE_OPTS="-Dorg.gradle.daemon=false"
 fi
