@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-prepare_obj_dir() {
+prepare_obj_dir1() {
   rm -rf obj $_TMP_DIR/obj
-  mkdir -p $_TMP_DIR/obj $_WORK_DIR/cache/gradle
+  mkdir -p $_TMP_DIR/obj
   ln -sf $_TMP_DIR/obj obj-aarch64-unknown-linux-android
-  ln -sf $_WORK_DIR/cache/gradle obj-aarch64-unknown-linux-android/gradle
+}
+
+prepare_obj_dir2() {
+  ln -sf $_CACHE_DIR/gradle obj-aarch64-unknown-linux-android/gradle
 }
 
 run_pgo_emulator() {
@@ -34,10 +37,10 @@ source $(dirname $0)/paths.sh
 # export WRAPPER_WRITE_LOG=1
 # rm -f /tmp/clang-wrapper-log.txt /tmp/rust-wrapper-log.txt
 
-pushd $_WORK_DIR/firefox
-
 case $1 in
   windows)
+    pushd $_WORK_DIR/firefox
+
     # export TREAT_HOST_AS_TARGET=1
 
     rm -rf workspace
@@ -73,57 +76,79 @@ case $1 in
     mkdir -p $_WORK_DIR/release
     cp -vr workspace/*.profdata $_WORK_DIR/release/
     cp -v obj-x86_64-pc-windows-msvc/dist/install/sea/*.exe $_WORK_DIR/release/
+
+    popd
     ;;
   android)
-pushd microg
-./gradlew -x javaDocReleaseGeneration \
-  :play-services-ads-identifier:publishToMavenLocal \
-  :play-services-base:publishToMavenLocal \
-  :play-services-basement:publishToMavenLocal \
-  :play-services-fido:publishToMavenLocal \
-  :play-services-tasks:publishToMavenLocal
-popd
+    pushd microg
+    ./gradlew -x javaDocReleaseGeneration \
+      :play-services-ads-identifier:publishToMavenLocal \
+      :play-services-base:publishToMavenLocal \
+      :play-services-basement:publishToMavenLocal \
+      :play-services-fido:publishToMavenLocal \
+      :play-services-tasks:publishToMavenLocal
+    popd
 
-sudo rm -rf /builds
-sudo mkdir /builds
-sudo chown $(stat -c %u:%g ~) /builds
+    sudo rm -rf /builds
+    sudo mkdir /builds
+    sudo chown $(stat -c %u:%g ~) /builds
 
-export CLANG_WRAPPER_TARGET_PREPEND="-march=armv8-a+crypto+crc"
-export RUST_WRAPPER_TARGET_APPEND="-C target-feature=+crypto,+crc"
+    mkdir -p $_CACHE_DIR/gradle
 
-prepare_obj_dir
-PGO_STAGE=1 python3 mach build
-run_pgo_emulator
-pushd workspace
-llvm-profdata merge --sparse=true *.profraw -o merged.profdata
-popd
+    export CLANG_WRAPPER_TARGET_PREPEND="-march=armv8-a+crypto+crc"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-feature=+crypto,+crc"
 
-prepare_obj_dir
-PGO_STAGE=2 python3 mach build
-run_pgo_emulator
-pushd workspace
-llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
-popd
+    # Stage 1
+    mv firefox $_TMP_DIR/
+    ln -sf $_TMP_DIR/firefox firefox
+    pushd firefox
+    prepare_obj_dir2
+    PGO_STAGE=1 python3 mach build
+    popd
+    rm -f firefox
+    mv $_TMP_DIR/firefox ./
 
-unset CLANG_WRAPPER_TARGET_PREPEND
-export CLANG_WRAPPER_TARGET_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
-export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
+    run_pgo_emulator
+    pushd workspace
+    llvm-profdata merge --sparse=true *.profraw -o merged.profdata
+    popd
 
-prepare_obj_dir
-PGO_STAGE=3 python3 mach build
+    # Stage 2
+    mv firefox $_TMP_DIR/
+    ln -sf $_TMP_DIR/firefox firefox
+    pushd firefox
+    prepare_obj_dir2
+    PGO_STAGE=2 python3 mach build
+    popd
+    rm -f firefox
+    mv $_TMP_DIR/firefox ./
 
-pushd mobile/android/fenix
-./gradlew assembleRelease
-popd
-mkdir -p $_WORK_DIR/release
-cp -v workspace/* \
-  obj-aarch64-unknown-linux-android/gradle/build/mobile/android/fenix/app/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk \
-  $_WORK_DIR/release/
+    run_pgo_emulator
+    pushd workspace
+    llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
+    popd
+
+    unset CLANG_WRAPPER_TARGET_PREPEND
+    export CLANG_WRAPPER_TARGET_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+    export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
+
+    # Stage 3
+    prepare_obj_dir1
+    prepare_obj_dir2
+    PGO_STAGE=3 python3 mach build
+
+    pushd mobile/android/fenix
+    ./gradlew assembleRelease
+    popd
+    mkdir -p $_WORK_DIR/release
+    cp -v workspace/* \
+      obj-aarch64-unknown-linux-android/gradle/build/mobile/android/fenix/app/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk \
+      $_WORK_DIR/release/
+
+    popd
     ;;
 esac
 
 if [[ -n $USE_SCCACHE ]]; then
     sccache --stop-server
 fi
-
-popd

@@ -24,7 +24,9 @@ class CompilerWrapper():
 
         if not is_target:
             append_flags += quick_flags
-            append_flags += ["-C", "incremental=/mnt/rust_incremental"]
+            cache_dir = os.getenv("_CACHE_DIR", "")
+            if cache_dir:
+                append_flags += ["-C", f"incremental={cache_dir}"]
             self.args += append_flags
             return
 

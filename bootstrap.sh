@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 if [[ $1 != "windows" && $1 != "android" ]]; then
     exit 1
@@ -17,11 +17,12 @@ fi
 cd $_WORK_DIR
 git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
 
-pushd firefox
 cp -vf $_REPO_DIR/mozconfigs/$1 $GECKO_PATH/mozconfig
 
 case $1 in
   windows)
+    pushd firefox
+
     python3 mach --no-interactive bootstrap --application-choice browser
     git clone --depth 1 --single-branch --no-tags https://github.com/mozilla-l10n/firefox-l10n
 
@@ -60,6 +61,8 @@ case $1 in
     # Config gradle
     mkdir -p ~/.gradle
     echo "org.gradle.daemon=false" > ~/.gradle/gradle.properties
+
+    pushd firefox
 
     # Bootstrap building environments
     yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
