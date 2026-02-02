@@ -64,7 +64,7 @@ case $1 in
 
     mv $_TMP_DIR/firefox/.git firefox_git
     mv $_TMP_DIR/firefox ./
-    ln -sf $(realpath -s firefox_git) firefox/.git
+    ln -nsf $(realpath -s firefox_git) firefox/.git
     mv $_TMP_DIR/microg ./
 
     # Config gradle
@@ -77,7 +77,7 @@ case $1 in
 
     pushd firefox
       mkdir -p $_TMP_DIR/mozbuild
-      ln -sf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
+      ln -nsf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
       # Bootstrap building environments
       cp -vf $_REPO_DIR/mozconfigs/$1 mozconfig
@@ -86,7 +86,7 @@ case $1 in
         rm -rf toolchains android-device/avd/* android-sdk-linux/system-images/*
         if [ -n $JAVA_HOME_17_X64 ]; then
           rm -rf jdk/jdk-17.0.15+6
-          ln -sf $JAVA_HOME_17_X64
+          ln -nsf $JAVA_HOME_17_X64 jdk/jdk-17.0.15+6
         fi
       popd
 
@@ -95,14 +95,14 @@ case $1 in
     popd
 
     mv $_TMP_DIR/mozbuild mozbuild
-    ln -sf $(realpath -s mozbuild) $_MOZBUILD_DIR
+    ln -nsf $(realpath -s mozbuild) $_MOZBUILD_DIR
 
     pushd $_MOZBUILD_DIR
       mkdir -p cache
       mv android-device/avd cache/
-      ln -sf $_TMP_DIR/mozbuild-cache/avd android-device/avd
+      ln -nsf $_TMP_DIR/mozbuild-cache/avd android-device/avd
       mv android-sdk-linux/system-images cache/
-      ln -sf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
+      ln -nsf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
 
       # Install mold linker
       MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
@@ -112,8 +112,8 @@ case $1 in
       pushd clang/bin
         install -m0755 $_REPO_DIR/wrappers/android/clang.py clang.py
         mv clang clang.real
-        ln -sf clang.py clang
-        # ln -sf clang.py clang++
+        ln -nsf clang.py clang
+        # ln -nsf clang.py clang++
       popd
     popd
 
@@ -124,9 +124,7 @@ case $1 in
     pushd $(dirname $(~/.cargo/bin/rustup which rustc))
       [ ! -f rustc.real ] && mv rustc rustc.real
       install -m0755 $_REPO_DIR/wrappers/android/rust.py rust.py
-      ln -sf rust.py rustc
+      ln -nsf rust.py rustc
     popd
     ;;
 esac
-
-popd

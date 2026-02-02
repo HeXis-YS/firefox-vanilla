@@ -4,16 +4,16 @@ set -euo pipefail
 prepare_obj_dir1() {
   rm -rf obj $_TMP_DIR/obj
   mkdir -p $_TMP_DIR/obj
-  ln -sf $_TMP_DIR/obj obj-aarch64-unknown-linux-android
+  ln -nsf $_TMP_DIR/obj obj-aarch64-unknown-linux-android
 }
 
 prepare_obj_dir2() {
-  ln -sf $_CACHE_DIR/gradle obj-aarch64-unknown-linux-android/gradle
+  ln -nsf $_CACHE_DIR/gradle obj-aarch64-unknown-linux-android/gradle
 }
 
 run_pgo_emulator() {
   mv $_TMP_DIR/obj obj
-  ln -sf obj obj-aarch64-unknown-linux-android
+  ln -nsf obj obj-aarch64-unknown-linux-android
   cp -r $_MOZBUILD_DIR/cache $_TMP_DIR/mozbuild-cache
   rm -rf workspace/*.profraw
   MOZ_FETCHES_DIR=$_MOZBUILD_DIR python3 mach python testing/mozharness/scripts/android_emulator_pgo.py \
@@ -100,7 +100,7 @@ case $1 in
 
     # Stage 1
     mv firefox $_TMP_DIR/
-    ln -sf $_TMP_DIR/firefox firefox
+    ln -nsf $_TMP_DIR/firefox firefox
     pushd firefox
     prepare_obj_dir2
     PGO_STAGE=1 python3 mach build
@@ -115,7 +115,7 @@ case $1 in
 
     # Stage 2
     mv firefox $_TMP_DIR/
-    ln -sf $_TMP_DIR/firefox firefox
+    ln -nsf $_TMP_DIR/firefox firefox
     pushd firefox
     prepare_obj_dir2
     PGO_STAGE=2 python3 mach build
