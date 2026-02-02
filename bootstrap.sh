@@ -1,4 +1,5 @@
-#!/usr/bin/bash -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 if [[ $1 != "windows" && $1 != "android" ]]; then
     exit 1
@@ -13,11 +14,11 @@ if [[ $(uname) == "Linux" ]]; then
   sudo apt install -y python3 python3-pip python3-venv git libx11-6 procps libnotify-bin
 fi
 
-cd $WORK_DIR
+cd $_WORK_DIR
 git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
 
 pushd firefox
-cp -vf $REPO_DIR/mozconfigs/$1 $GECKO_PATH/mozconfig
+cp -vf $_REPO_DIR/mozconfigs/$1 $GECKO_PATH/mozconfig
 
 case $1 in
   windows)
@@ -26,19 +27,19 @@ case $1 in
 
     # Setup wrapper
     pip install pyinstaller
-    pushd $WORK_DIR
+    pushd $_WORK_DIR
     rm -rf dist
-    pyinstaller --optimize 2 --noupx $REPO_DIR/wrappers/windows/clang.py
+    pyinstaller --optimize 2 --noupx $_REPO_DIR/wrappers/windows/clang.py
     pyinstaller -y clang.spec
-    pyinstaller --optimize 2 --noupx $REPO_DIR/wrappers/windows/rust.py
+    pyinstaller --optimize 2 --noupx $_REPO_DIR/wrappers/windows/rust.py
     pyinstaller -y rust.spec
     popd
 
-    pushd $MOZBUILD_DIR/clang/bin
+    pushd $_MOZBUILD_DIR/clang/bin
     mv clang.exe clang.real.exe
     powershell del clang++.exe
     powershell del clang-cl.exe
-    cp -r $WORK_DIR/dist/clang/. ./
+    cp -r $_WORK_DIR/dist/clang/. ./
     cp clang.exe clang++.exe
     cp clang.exe clang-cl.exe
     popd
@@ -47,7 +48,7 @@ case $1 in
 
     pushd $(dirname $(~/.cargo/bin/rustup which rustc))
     mv rustc.exe rustc.real.exe
-    cp -r $WORK_DIR/dist/rust/. ./
+    cp -r $_WORK_DIR/dist/rust/. ./
     mv rust.exe rustc.exe
     popd
     ;;
@@ -66,15 +67,16 @@ case $1 in
     # Setup AVD
     mkdir -p ~/.config/"Android Open Source Project"
     echo -e "[General]\nshowNestedWarning=false\nshowGpuWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
-    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$REPO_DIR/android31-x86_64.json --no-interactive
+    rm -rf $_MOZBUILD_DIR/android-device/avd/. $_MOZBUILD_DIR/android-sdk-linux/system-images/.
+    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive
 
     # Setup libndk for AVD
     # sudo apt install -y udev
     # sudo groupadd -r kvm || true
     # sudo gpasswd -a $(whoami) kvm || true
-    # ADB="$MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554"
+    # ADB="$_MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554"
     # git clone --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/vendor_google_proprietary_ndk_translation-prebuilt /tmp/libndk
-    # ANDROID_EMULATOR_HOME=$MOZBUILD_DIR/android-device $MOZBUILD_DIR/android-sdk-linux/emulator/emulator \
+    # ANDROID_EMULATOR_HOME=$_MOZBUILD_DIR/android-device $_MOZBUILD_DIR/android-sdk-linux/emulator/emulator \
     #   -avd mozemulator-android31-x86_64 -skip-adb-auth -selinux permissive -memory 8192 -cores 4 -skin 1280x960 -writable-system -no-audio -no-window -no-boot-anim \
     #   -qemu -enable-kvm -cpu host -smp cores=4 &
     # $ADB wait-for-device root
@@ -88,16 +90,26 @@ case $1 in
     # wait
     # rm -rf /tmp/libndk
 
+    pushd $_MOZBUILD_DIR
+
+    mkdir -p cache
+    mv android-device/avd cache/
+    ln -sf $_TMP_DIR/mozbuild-cache/avd android-device/avd
+    mv android-sdk-linux/system-images cache/
+    ln -sf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
+
     # Install mold linker
     MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
-    curl -fsSL $MOLD_URL | tar --strip-components=1 -C $MOZBUILD_DIR/clang -xzf-
+    curl -fsSL $MOLD_URL | tar --strip-components=1 -C clang -xzf-
 
     # Setup clang wrapper
-    pushd $MOZBUILD_DIR/clang/bin
-    install -m0755 $REPO_DIR/wrappers/android/clang.py clang.py
+    pushd clang/bin
+    install -m0755 $_REPO_DIR/wrappers/android/clang.py clang.py
     mv clang clang.real
     ln -sf clang.py clang
     # ln -sf clang.py clang++
+    popd
+
     popd
 
     # Setup rust wrapper
@@ -106,7 +118,7 @@ case $1 in
     rustup target add aarch64-linux-android
     pushd $(dirname $(~/.cargo/bin/rustup which rustc))
     [ ! -f rustc.real ] && mv rustc rustc.real
-    install -m0755 $REPO_DIR/wrappers/android/rust.py rust.py
+    install -m0755 $_REPO_DIR/wrappers/android/rust.py rust.py
     ln -sf rust.py rustc
     popd
     ;;

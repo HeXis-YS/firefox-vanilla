@@ -11,8 +11,10 @@ class CompilerWrapper():
         self.real_compiler = Path(__file__).resolve().parent / "rustc.real"
 
     def parse_custom_flags(self):
+        quick_flags = ["-C", "opt-level=2", "-C", "codegen-units=16", "-C", "embed-bitcode=no", "-C", "lto=no", "-C", "link-arg=-fuse-ld=mold"]
+
         prepend_flags = []
-        append_flags = ["-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort"]
+        append_flags = ["-C", "debuginfo=none", "-C", "force-frame-pointers=no", "-C", "force-unwind-tables=no", "-C", "panic=abort", "-C", "link-arg=-Wl,-O2,--icf=all,--as-needed,--sort-common,--pack-dyn-relocs=relr"]
 
         try:
             i = self.args.index("--target")
@@ -21,7 +23,8 @@ class CompilerWrapper():
             is_target = False
 
         if not is_target:
-            append_flags += ["-C", "opt-level=1", "-C", "codegen-units=16"]
+            append_flags += quick_flags
+            append_flags += ["-C", "incremental=/mnt/rust_incremental"]
             self.args += append_flags
             return
 
@@ -33,14 +36,15 @@ class CompilerWrapper():
         gecko = os.getenv("GECKO_PATH", "")
         match pgo_stage:
             case 1 | 2:
-                append_flags += ["-C", "opt-level=1", "-C", "codegen-units=16"]
+                append_flags += quick_flags
                 append_flags += ["-C", "llvm-args=--pgo-temporal-instrumentation"]
                 if pgo_stage == 1:
                     append_flags += ["-C", "profile-generate"]
                 else:
                     append_flags += ["-C", f"profile-use={gecko}/workspace/merged.profdata", "-C", "llvm-args=--cs-profile-generate"]
-            case _:
+            case 0 | 3:
                 append_flags += ["-C", "opt-level=3", "-C", "codegen-units=1"]
+                append_flags += ["-C", "link-arg=-fuse-ld=lld"]
                 use_lto = True
                 try:
                     i = self.args.index("--crate-name")

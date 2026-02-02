@@ -15,12 +15,14 @@ class CompilerWrapper():
         for arg in self.args:
             if not is_target and arg.startswith("--target=aarch64-linux-android"):
                 is_target = True
+                continue
             arg_list = arg.split('/')
             if arg_list[-1].startswith("conftest"):
                 is_conftest = True
                 break
         do_link = not ("-c" in self.args or "-E" in self.args)
 
+        generic_ldflags = ["-Wl,-O2,--icf=all,--as-needed,--sort-common,--pack-dyn-relocs=relr"]
         prepend_flags = []
         append_flags = ["-pipe", "-g0", "-fno-stack-protector", "-fno-plt"]
 
@@ -29,6 +31,8 @@ class CompilerWrapper():
                 append_flags += ["-O0"]
             else:
                 append_flags += ["-O1"]
+                if do_link:
+                    append_flags += generic_ldflags
             if do_link:
                 append_flags += ["-fuse-ld=mold"]
             self.args += append_flags
@@ -36,7 +40,7 @@ class CompilerWrapper():
 
         append_flags += ["-Wno-unused-command-line-argument"]
         if do_link:
-            append_flags += ["-Wl,-O2,--icf=all,--as-needed,--sort-common"]
+            append_flags += generic_ldflags
 
         try:
             pgo_stage = int(os.getenv("PGO_STAGE", "0"))
@@ -62,7 +66,7 @@ class CompilerWrapper():
                     append_flags += ["-fuse-ld=lld", "-s", "-Wl,--gc-sections,-mllvm,-enable-ext-tsp-block-placement=1"]
                     append_flags += ["-Wl,--lto-O3,--lto-partitions=1"]
                 if pgo_stage == 3:
-                    append_flags += [f"-fprofile-use={gecko}/workspace/merged-cs.profdata"]
+                    append_flags += [f"-fprofile-use={gecko}/workspace/merged.profdata"]
 
         env_prepend = os.getenv("CLANG_WRAPPER_TARGET_PREPEND")
         if env_prepend:

@@ -2,31 +2,27 @@ case $PGO_STAGE in
   1)
     ac_add_options --enable-profile-generate=cross
     ;;
-  2)
+  2 | 3)
     ac_add_options --enable-profile-use=cross
     ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
     ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged.profdata"
-    ;;
-  3)
-    ac_add_options --disable-webdriver
-    ac_add_options --enable-elf-hack=relr
-    ac_add_options --enable-lto=cross,full
-    ac_add_options --enable-profile-use=cross
-    ac_add_options --with-pgo-jarlog="@TOPSRCDIR@/workspace/en-US.log"
-    ac_add_options --with-pgo-profile-path="@TOPSRCDIR@/workspace/merged-cs.profdata"
-    ;;
+    if [ "$PGO_STAGE" = "3" ]; then
+      ac_add_options --disable-webdriver
+      ac_add_options --enable-lto=cross,full
+    fi
 esac
 
 # Build Configs
 ac_add_options --enable-project=mobile/android
 ac_add_options --disable-artifact-builds
 ac_add_options --enable-bootstrap
-if test "$USE_SCCACHE"; then
+if [ -n "$USE_SCCACHE" ]; then
     ac_add_options --with-ccache=sccache
 fi
 
 # Build for Android
 ac_add_options --target=aarch64
+ac_add_options --disable-elf-hack
 
 # Optimization settings
 ac_add_options --enable-install-strip
@@ -49,7 +45,7 @@ ac_add_options --disable-webspeech
 ac_add_options --disable-gecko-profiler
 ac_add_options --disable-profiling
 ac_add_options --disable-real-time-tracing
-ac_add_options --disable-printing
+# ac_add_options --disable-printing
 
 # Client settings
 mk_add_options MOZ_CRASHREPORTER=0

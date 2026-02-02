@@ -1,16 +1,21 @@
 #!/usr/bin/bash
-REPO_DIR="$(dirname "$(realpath "$0")")"
-WORK_DIR="$(pwd)"
-PATCHES_DIR="$WORK_DIR/patches"
-MOZBUILD_DIR="$(realpath ~/.mozbuild)"
-export GECKO_PATH="$WORK_DIR/firefox"
+_REPO_DIR="$(dirname "$(realpath "$0")")"
+_WORK_DIR="$(pwd)"
+_MOZBUILD_DIR="$(realpath ~/.mozbuild)"
+export GECKO_PATH="$_WORK_DIR/firefox"
 
-export PATH="$MOZBUILD_DIR/sccache:$PATH"
+[ -d $_MOZBUILD_DIR/clang/bin ] && export PATH="$_MOZBUILD_DIR/clang/bin:$PATH"
+[ -d $_MOZBUILD_DIR/sccache ] && export PATH="$_MOZBUILD_DIR/sccache:$PATH"
 
 if [[ "$(uname)" == "Linux" ]]; then
-  export PATH="$WORK_DIR/venv/bin:$PATH"
-  export ANDROID_HOME="$MOZBUILD_DIR/android-sdk-linux"
-  export JAVA_HOME=${JAVA_HOME_17_X64:-$MOZBUILD_DIR/jdk/jdk-17.0.15+6}
+  _TMP_DIR=/tmp/firefox-vanilla
+  export PATH="$_WORK_DIR/venv/bin:$PATH"
+  export ANDROID_HOME="$_MOZBUILD_DIR/android-sdk-linux"
+  unset ANDROID_SDK_ROOT
+  if [ -n $JAVA_HOME_17_X64 ]; then
+    export JAVA_HOME=$JAVA_HOME_17_X64
+  else
+    export JAVA_HOME=$_MOZBUILD_DIR/jdk/jdk-17.0.15+6
+  fi
+  export GRADLE_OPTS="-Dorg.gradle.daemon=false"
 fi
-
-export GRADLE_OPTS="-Dorg.gradle.daemon=false"
