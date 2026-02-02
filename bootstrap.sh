@@ -91,7 +91,7 @@ case $1 in
       popd
 
       # Setup AVD
-      yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive
+      yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive || true
     popd
 
     mv $_TMP_DIR/mozbuild mozbuild
