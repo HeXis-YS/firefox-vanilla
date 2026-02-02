@@ -56,12 +56,10 @@ case $1 in
   android)
     pushd $_TMP_DIR
       git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
-      mv firefox $_WORK_DIR/
 
       # Clone microG
       MICROG_VERSION=v0.3.11.250932
       git clone -b $MICROG_VERSION --depth 1 --single-branch --no-tags https://github.com/microg/GmsCore microg
-      mv microg $_WORK_DIR/
     popd
 
     mv $_TMP_DIR/firefox/.git firefox_git
