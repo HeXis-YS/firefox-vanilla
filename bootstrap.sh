@@ -16,11 +16,10 @@ fi
 
 cd $_WORK_DIR
 
-cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
-
 case $1 in
   windows)
     git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
+    cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
 
     pushd firefox
 
@@ -78,6 +77,7 @@ case $1 in
       ln -sf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
       # Bootstrap building environments
+      cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
       yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
       rm -rf $_MOZBUILD_DIR/toolchains
 
