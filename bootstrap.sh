@@ -76,21 +76,26 @@ case $1 in
     echo -e "[General]\nshowNestedWarning=false\nshowGpuWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
 
     pushd firefox
-      mkdir $_TMP_DIR/mozbuild
+      mkdir -p $_TMP_DIR/mozbuild
       ln -sf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
       # Bootstrap building environments
       cp -vf $_REPO_DIR/mozconfigs/$1 mozconfig
-      yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
-      rm -rf $_MOZBUILD_DIR/toolchains
-
-      mv $_TMP_DIR/mozbuild mozbuild
-      ln -sf $(realpath mozbuild) $_MOZBUILD_DIR
+      yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android || true
+      pushd $_MOZBUILD_DIR
+        rm -rf toolchains android-device/avd/* android-sdk-linux/system-images/*
+        if [ -n $JAVA_HOME_17_X64 ]; then
+          rm -rf jdk/jdk-17.0.15+6
+          ln -sf $JAVA_HOME_17_X64
+        fi
+      popd
 
       # Setup AVD
-      rm -rf $_MOZBUILD_DIR/android-device/avd/. $_MOZBUILD_DIR/android-sdk-linux/system-images/.
       yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive
     popd
+
+    mv $_TMP_DIR/mozbuild mozbuild
+    ln -sf $(realpath mozbuild) $_MOZBUILD_DIR
 
     pushd $_MOZBUILD_DIR
       mkdir -p cache
