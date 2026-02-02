@@ -57,16 +57,17 @@ case $1 in
     pushd $_TMP_DIR
       git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
       mv firefox $_WORK_DIR/
-      pushd $_WORK_DIR
-      mkdir git
-      mv firefox/.git git/firefox
-      ln -sf $(realpath git/firefox) firefox/.git
 
       # Clone microG
       MICROG_VERSION=v0.3.11.250932
       git clone -b $MICROG_VERSION --depth 1 --single-branch --no-tags https://github.com/microg/GmsCore microg
       mv microg $_WORK_DIR/
     popd
+
+    mv $_TMP_DIR/firefox/.git firefox_git
+    mv $_TMP_DIR/firefox ./
+    ln -sf $(realpath firefox_git) firefox/.git
+    mv $_TMP_DIR/microg ./
 
     # Config gradle
     mkdir -p ~/.gradle
