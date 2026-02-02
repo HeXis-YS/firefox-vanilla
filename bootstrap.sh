@@ -15,12 +15,13 @@ if [[ $(uname) == "Linux" ]]; then
 fi
 
 cd $_WORK_DIR
-git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
 
-cp -vf $_REPO_DIR/mozconfigs/$1 $GECKO_PATH/mozconfig
+cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
 
 case $1 in
   windows)
+    git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
+
     pushd firefox
 
     python3 mach --no-interactive bootstrap --application-choice browser
@@ -54,65 +55,58 @@ case $1 in
     popd
     ;;
   android)
-    # Clone microG
-    MICROG_VERSION=v0.3.11.250932
-    git clone -b $MICROG_VERSION --depth 1 --single-branch --no-tags https://github.com/microg/GmsCore microg
+    pushd $_TMP_DIR
+      git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
+      mv firefox $_WORK_DIR/
+
+      # Clone microG
+      MICROG_VERSION=v0.3.11.250932
+      git clone -b $MICROG_VERSION --depth 1 --single-branch --no-tags https://github.com/microg/GmsCore microg
+      mv microg $_WORK_DIR/
+    popd
 
     # Config gradle
     mkdir -p ~/.gradle
     echo "org.gradle.daemon=false" > ~/.gradle/gradle.properties
 
-    pushd firefox
-
-    # Bootstrap building environments
-    yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
-
-    # Setup AVD
+    # Config AVD
     mkdir -p ~/.config/"Android Open Source Project"
     echo -e "[General]\nshowNestedWarning=false\nshowGpuWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
-    rm -rf $_MOZBUILD_DIR/android-device/avd/. $_MOZBUILD_DIR/android-sdk-linux/system-images/.
-    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive
 
-    # Setup libndk for AVD
-    # sudo apt install -y udev
-    # sudo groupadd -r kvm || true
-    # sudo gpasswd -a $(whoami) kvm || true
-    # ADB="$_MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554"
-    # git clone --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/vendor_google_proprietary_ndk_translation-prebuilt /tmp/libndk
-    # ANDROID_EMULATOR_HOME=$_MOZBUILD_DIR/android-device $_MOZBUILD_DIR/android-sdk-linux/emulator/emulator \
-    #   -avd mozemulator-android31-x86_64 -skip-adb-auth -selinux permissive -memory 8192 -cores 4 -skin 1280x960 -writable-system -no-audio -no-window -no-boot-anim \
-    #   -qemu -enable-kvm -cpu host -smp cores=4 &
-    # $ADB wait-for-device root
-    # $ADB remount || true
-    # $ADB reboot
-    # $ADB wait-for-device root
-    # $ADB remount
-    # $ADB push /tmp/libndk/prebuilts/. /system/
-    # $ADB reboot
-    # $ADB wait-for-device emu kill
-    # wait
-    # rm -rf /tmp/libndk
+    pushd firefox
+      mkdir $_TMP_DIR/mozbuild
+      ln -sf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
-    pushd $_MOZBUILD_DIR
+      # Bootstrap building environments
+      yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
+      rm -rf $_MOZBUILD_DIR/toolchains
 
-    mkdir -p cache
-    mv android-device/avd cache/
-    ln -sf $_TMP_DIR/mozbuild-cache/avd android-device/avd
-    mv android-sdk-linux/system-images cache/
-    ln -sf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
+      rm -f $_MOZBUILD_DIR
+      mv $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
-    # Install mold linker
-    MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
-    curl -fsSL $MOLD_URL | tar --strip-components=1 -C clang -xzf-
-
-    # Setup clang wrapper
-    pushd clang/bin
-    install -m0755 $_REPO_DIR/wrappers/android/clang.py clang.py
-    mv clang clang.real
-    ln -sf clang.py clang
-    # ln -sf clang.py clang++
+      # Setup AVD
+      rm -rf $_MOZBUILD_DIR/android-device/avd/. $_MOZBUILD_DIR/android-sdk-linux/system-images/.
+      yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive
     popd
 
+    pushd $_MOZBUILD_DIR
+      mkdir -p cache
+      mv android-device/avd cache/
+      ln -sf $_TMP_DIR/mozbuild-cache/avd android-device/avd
+      mv android-sdk-linux/system-images cache/
+      ln -sf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
+
+      # Install mold linker
+      MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
+      curl -fsSL $MOLD_URL | tar --strip-components=1 -C clang -xzf-
+
+      # Setup clang wrapper
+      pushd clang/bin
+        install -m0755 $_REPO_DIR/wrappers/android/clang.py clang.py
+        mv clang clang.real
+        ln -sf clang.py clang
+        # ln -sf clang.py clang++
+      popd
     popd
 
     # Setup rust wrapper
@@ -120,9 +114,9 @@ case $1 in
     rustup default nightly-2025-02-17
     rustup target add aarch64-linux-android
     pushd $(dirname $(~/.cargo/bin/rustup which rustc))
-    [ ! -f rustc.real ] && mv rustc rustc.real
-    install -m0755 $_REPO_DIR/wrappers/android/rust.py rust.py
-    ln -sf rust.py rustc
+      [ ! -f rustc.real ] && mv rustc rustc.real
+      install -m0755 $_REPO_DIR/wrappers/android/rust.py rust.py
+      ln -sf rust.py rustc
     popd
     ;;
 esac
