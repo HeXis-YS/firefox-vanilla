@@ -64,7 +64,7 @@ case $1 in
 
     mv $_TMP_DIR/firefox/.git firefox_git
     mv $_TMP_DIR/firefox ./
-    ln -sf $(realpath firefox_git) firefox/.git
+    ln -sf $(realpath -s firefox_git) firefox/.git
     mv $_TMP_DIR/microg ./
 
     # Config gradle
@@ -95,7 +95,7 @@ case $1 in
     popd
 
     mv $_TMP_DIR/mozbuild mozbuild
-    ln -sf $(realpath mozbuild) $_MOZBUILD_DIR
+    ln -sf $(realpath -s mozbuild) $_MOZBUILD_DIR
 
     pushd $_MOZBUILD_DIR
       mkdir -p cache

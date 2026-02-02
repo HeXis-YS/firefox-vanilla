@@ -1,7 +1,7 @@
 #!/usr/bin/bash
-_REPO_DIR="$(dirname "$(realpath "$0")")"
+_REPO_DIR="$(dirname "$(realpath -s "$0")")"
 _WORK_DIR="$(pwd)"
-_MOZBUILD_DIR="$(realpath ~/.mozbuild)"
+_MOZBUILD_DIR="$(realpath -s ~/.mozbuild)"
 export GECKO_PATH="$_WORK_DIR/firefox"
 
 [ -d $_MOZBUILD_DIR/clang/bin ] && export PATH="$_MOZBUILD_DIR/clang/bin:$PATH"

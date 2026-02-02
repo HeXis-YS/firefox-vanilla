@@ -71,7 +71,7 @@ case $1 in
     rm -rf obj-x86_64-pc-windows-msvc
     PGO_STAGE=3 python3 mach build
     python3 mach package
-    MOZ_ARTIFACT_FILE=$(realpath obj-x86_64-pc-windows-msvc/dist/$(cat obj-x86_64-pc-windows-msvc/dist/package_name.txt)) python3 mach build installers-zh-CN
+    MOZ_ARTIFACT_FILE=$(realpath -s obj-x86_64-pc-windows-msvc/dist/$(cat obj-x86_64-pc-windows-msvc/dist/package_name.txt)) python3 mach build installers-zh-CN
 
     mkdir -p $_WORK_DIR/release
     cp -vr workspace/*.profdata $_WORK_DIR/release/
