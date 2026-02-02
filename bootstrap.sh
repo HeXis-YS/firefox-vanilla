@@ -57,6 +57,10 @@ case $1 in
     pushd $_TMP_DIR
       git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
       mv firefox $_WORK_DIR/
+      pushd $_WORK_DIR
+      mkdir git
+      mv firefox/.git git/firefox
+      ln -sf $(realpath git/firefox) firefox/.git
 
       # Clone microG
       MICROG_VERSION=v0.3.11.250932
@@ -77,7 +81,7 @@ case $1 in
       ln -sf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
 
       # Bootstrap building environments
-      cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
+      cp -vf $_REPO_DIR/mozconfigs/$1 mozconfig
       yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android
       rm -rf $_MOZBUILD_DIR/toolchains
 
