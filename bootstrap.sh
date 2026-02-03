@@ -71,7 +71,7 @@ case $1 in
     # Bootstrap building environments
     yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android || true
     pushd $_MOZBUILD_DIR
-      rm -rf toolchains android-device/avd/* android-sdk-linux/system-images/*
+      rm -rf android-device/avd/* android-sdk-linux/system-images/*
       if [ -n $JAVA_HOME_17_X64 ]; then
         rm -rf jdk/jdk-17.0.15+6
         ln -nsf $JAVA_HOME_17_X64 jdk/jdk-17.0.15+6
@@ -82,10 +82,10 @@ case $1 in
     yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive || true
 
     pushd $_MOZBUILD_DIR
-      mkdir -p $_WORK_DIR/mozbuild-cache
-      mv android-device/avd $_WORK_DIR/mozbuild-cache/
-      mv android-sdk-linux/system-images $_WORK_DIR/mozbuild-cache/
-      ln -nsf mozbuild-cache cache
+      mkdir -p cache.real
+      mv android-device/avd cache.real/
+      mv android-sdk-linux/system-images cache.real/
+      ln -nsf cache.real cache
       ln -nsf ../cache/avd android-device/avd
       ln -nsf ../cache/system-images android-sdk-linux/system-images
 

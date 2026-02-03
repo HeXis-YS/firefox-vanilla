@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-prepare_obj_dir1() {
-  rm -rf obj $_TMP_DIR/obj
+prepare_obj_dir() {
+  rm -rf $_TMP_DIR/obj obj-aarch64-unknown-linux-android
   mkdir -p $_TMP_DIR/obj
   ln -nsf $_TMP_DIR/obj obj-aarch64-unknown-linux-android
-}
-
-prepare_obj_dir2() {
   ln -nsf $_CACHE_DIR/gradle obj-aarch64-unknown-linux-android/gradle
 }
 
 run_pgo_emulator() {
-  mv $_TMP_DIR/obj obj
-  ln -nsf obj obj-aarch64-unknown-linux-android
-  cp -r $_MOZBUILD_DIR/mozbuild-cache $_TMP_DIR/
+  rm -rf obj obj-aarch64-unknown-linux-android
+  mv $_TMP_DIR/obj obj-aarch64-unknown-linux-android
+  cp -r $_MOZBUILD_DIR/cache.real $_TMP_DIR/
+  ln -nsf $_TMP_DIR/cache.real $_MOZBUILD_DIR/cache
   rm -rf workspace/*.profraw
   MOZ_FETCHES_DIR=$_MOZBUILD_DIR python3 mach python testing/mozharness/scripts/android_emulator_pgo.py \
     --config-file testing/mozharness/configs/android/android_common.py \
@@ -22,10 +20,8 @@ run_pgo_emulator() {
     --config-file testing/mozharness/configs/android/android_pgo.py \
     --installer-path obj-aarch64-unknown-linux-android/gradle/build/mobile/android/test_runner/outputs/apk/debug/test_runner-debug.apk
   $_MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554 emu kill || true
-  rm -rf $_TMP_DIR/mozbuild-cache
-  pushd workspace
-  llvm-profdata merge --sparse=true *.profraw -o merged.profdata
-  popd
+  ln -nsf cache.real $_MOZBUILD_DIR/cache
+  rm -rf $_TMP_DIR/cache.real
 }
 
 if [[ $1 != "windows" && $1 != "android" ]]; then
@@ -98,53 +94,38 @@ case $1 in
     export CLANG_WRAPPER_TARGET_PREPEND="-march=armv8-a+crypto+crc"
     export RUST_WRAPPER_TARGET_APPEND="-C target-feature=+crypto,+crc"
 
-    # Stage 1
-    mv firefox $_TMP_DIR/
-    ln -nsf $_TMP_DIR/firefox firefox
     pushd firefox
-    prepare_obj_dir2
-    PGO_STAGE=1 python3 mach build
-    popd
-    rm -f firefox
-    mv $_TMP_DIR/firefox ./
+      # Stage 1
+      prepare_obj_dir
+      PGO_STAGE=1 python3 mach build
+      run_pgo_emulator
+      pushd workspace
+        llvm-profdata merge --sparse=true *.profraw -o merged.profdata
+      popd
 
-    run_pgo_emulator
-    pushd workspace
-    llvm-profdata merge --sparse=true *.profraw -o merged.profdata
-    popd
+      # Stage 2
+      prepare_obj_dir
+      PGO_STAGE=2 python3 mach build
+      run_pgo_emulator
+      pushd workspace
+        llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
+      popd
 
-    # Stage 2
-    mv firefox $_TMP_DIR/
-    ln -nsf $_TMP_DIR/firefox firefox
-    pushd firefox
-    prepare_obj_dir2
-    PGO_STAGE=2 python3 mach build
-    popd
-    rm -f firefox
-    mv $_TMP_DIR/firefox ./
+      unset CLANG_WRAPPER_TARGET_PREPEND
+      export CLANG_WRAPPER_TARGET_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
+      export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
 
-    run_pgo_emulator
-    pushd workspace
-    llvm-profdata merge --sparse=true merged.profdata *.profraw -o merged-cs.profdata
-    popd
+      # Stage 3
+      prepare_obj_dir
+      PGO_STAGE=3 python3 mach build
 
-    unset CLANG_WRAPPER_TARGET_PREPEND
-    export CLANG_WRAPPER_TARGET_APPEND="-mcpu=cortex-x3+crypto+sha3+nosve -mtune=cortex-a510"
-    export RUST_WRAPPER_TARGET_APPEND="-C target-cpu=cortex-x3 -Z tune-cpu=cortex-a510 -C target-feature=+crypto,+sha3,-sve"
-
-    # Stage 3
-    prepare_obj_dir1
-    prepare_obj_dir2
-    PGO_STAGE=3 python3 mach build
-
-    pushd mobile/android/fenix
-    ./gradlew assembleRelease
-    popd
-    mkdir -p $_WORK_DIR/release
-    cp -v workspace/* \
-      obj-aarch64-unknown-linux-android/gradle/build/mobile/android/fenix/app/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk \
-      $_WORK_DIR/release/
-
+      pushd mobile/android/fenix
+      ./gradlew assembleRelease
+      popd
+      mkdir -p $_WORK_DIR/release
+      cp -v workspace/* \
+        obj-aarch64-unknown-linux-android/gradle/build/mobile/android/fenix/app/outputs/apk/fenix/release/app-fenix-arm64-v8a-release-unsigned.apk \
+        $_WORK_DIR/release/
     popd
     ;;
 esac
