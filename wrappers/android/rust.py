@@ -26,7 +26,7 @@ class CompilerWrapper():
             append_flags += quick_flags
             cache_dir = os.getenv("_CACHE_DIR", "")
             if cache_dir:
-                append_flags += ["-C", f"incremental={cache_dir}"]
+                append_flags += ["-C", f"incremental={cache_dir}/rust_incremental"]
             self.args += append_flags
             return
 

@@ -11,7 +11,7 @@ if [[ "$(uname)" == "Linux" ]]; then
   _TMP_DIR=/tmp/firefox-vanilla
   export _CACHE_DIR=$_WORK_DIR/cache
   mkdir -p $_TMP_DIR $_CACHE_DIR
-  export PATH="$_WORK_DIR/venv/bin:$PATH"
+  # export PATH="$_WORK_DIR/venv/bin:$PATH"
   export ANDROID_HOME="$_MOZBUILD_DIR/android-sdk-linux"
   unset ANDROID_SDK_ROOT
   export JAVA_HOME=$_MOZBUILD_DIR/jdk/jdk-17.0.15+6

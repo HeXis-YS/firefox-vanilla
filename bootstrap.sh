@@ -15,14 +15,14 @@ if [[ $(uname) == "Linux" ]]; then
 fi
 
 cd $_WORK_DIR
+git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
+
+pushd firefox
+
+cp -vf $_REPO_DIR/mozconfigs/$1 mozconfig
 
 case $1 in
   windows)
-    git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
-    cp -vf $_REPO_DIR/mozconfigs/$1 firefox/mozconfig
-
-    pushd firefox
-
     python3 mach --no-interactive bootstrap --application-choice browser
     git clone --depth 1 --single-branch --no-tags https://github.com/mozilla-l10n/firefox-l10n
 
@@ -54,18 +54,11 @@ case $1 in
     popd
     ;;
   android)
-    pushd $_TMP_DIR
-      git clone -b $GIT_BRANCH --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/firefox
-
+    pushd $_WORK_DIR
       # Clone microG
       MICROG_VERSION=v0.3.11.250932
       git clone -b $MICROG_VERSION --depth 1 --single-branch --no-tags https://github.com/microg/GmsCore microg
     popd
-
-    mv $_TMP_DIR/firefox/.git firefox_git
-    mv $_TMP_DIR/firefox ./
-    ln -nsf $(realpath -s firefox_git) firefox/.git
-    mv $_TMP_DIR/microg ./
 
     # Config gradle
     mkdir -p ~/.gradle
@@ -75,34 +68,26 @@ case $1 in
     mkdir -p ~/.config/"Android Open Source Project"
     echo -e "[General]\nshowNestedWarning=false\nshowGpuWarning=false" > ~/.config/"Android Open Source Project"/Emulator.conf
 
-    pushd firefox
-      mkdir -p $_TMP_DIR/mozbuild
-      ln -nsf $_TMP_DIR/mozbuild $_MOZBUILD_DIR
-
-      # Bootstrap building environments
-      cp -vf $_REPO_DIR/mozconfigs/$1 mozconfig
-      yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android || true
-      pushd $_MOZBUILD_DIR
-        rm -rf toolchains android-device/avd/* android-sdk-linux/system-images/*
-        if [ -n $JAVA_HOME_17_X64 ]; then
-          rm -rf jdk/jdk-17.0.15+6
-          ln -nsf $JAVA_HOME_17_X64 jdk/jdk-17.0.15+6
-        fi
-      popd
-
-      # Setup AVD
-      yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive || true
+    # Bootstrap building environments
+    yes 'N' | python3 mach --no-interactive bootstrap --application-choice mobile_android || true
+    pushd $_MOZBUILD_DIR
+      rm -rf toolchains android-device/avd/* android-sdk-linux/system-images/*
+      if [ -n $JAVA_HOME_17_X64 ]; then
+        rm -rf jdk/jdk-17.0.15+6
+        ln -nsf $JAVA_HOME_17_X64 jdk/jdk-17.0.15+6
+      fi
     popd
 
-    mv $_TMP_DIR/mozbuild mozbuild
-    ln -nsf $(realpath -s mozbuild) $_MOZBUILD_DIR
+    # Setup AVD
+    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive || true
 
     pushd $_MOZBUILD_DIR
       mkdir -p $_WORK_DIR/mozbuild-cache
       mv android-device/avd $_WORK_DIR/mozbuild-cache/
       mv android-sdk-linux/system-images $_WORK_DIR/mozbuild-cache/
-      ln -nsf $_TMP_DIR/mozbuild-cache/avd android-device/avd
-      ln -nsf $_TMP_DIR/mozbuild-cache/system-images android-sdk-linux/system-images
+      ln -nsf mozbuild-cache cache
+      ln -nsf ../cache/avd android-device/avd
+      ln -nsf ../cache/system-images android-sdk-linux/system-images
 
       # Install mold linker
       MOLD_URL=$(curl -fsSL "https://api.github.com/repos/rui314/mold/releases/latest" | jq -r '.assets[] | select(.name | test("^mold-.*-x86_64-linux.tar.gz$")) | .browser_download_url')
@@ -128,3 +113,5 @@ case $1 in
     popd
     ;;
 esac
+
+popd
