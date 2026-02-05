@@ -1,6 +1,6 @@
 {
-    "emulator_package": "system-images;android-31;google_apis;x86_64",
-    "emulator_avd_name": "mozemulator-android31-x86_64",
+    "emulator_package": "system-images;android-33;default;x86_64",
+    "emulator_avd_name": "mozemulator-android33-x86_64",
     "emulator_extra_args": [
         "-skip-adb-auth",
         "-selinux", "permissive",
@@ -10,7 +10,6 @@
         "-no-audio",
         "-no-window",
         "-no-boot-anim",
-        "-no-snapstorage",
         "-qemu", "-enable-kvm", "-cpu", "host", "-smp", "cores=4"
     ],
     "emulator_extra_config": {

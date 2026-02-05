@@ -79,7 +79,32 @@ case $1 in
     popd
 
     # Setup AVD
-    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android31-x86_64.json --no-interactive || true
+    yes 'N' | python3 mach python python/mozboot/mozboot/android.py --avd-manifest=$_REPO_DIR/android33-x86_64.json --no-interactive || true
+
+    # Setup libhoudini for AVD
+    sudo apt install -y udev
+    sudo groupadd -r kvm || true
+    sudo gpasswd -a $(whoami) kvm || true
+    ADB="$_MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554"
+    git clone --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/vendor_intel_proprietary_houdini /tmp/libhoudini
+    ANDROID_EMULATOR_HOME=$_MOZBUILD_DIR/android-device $_MOZBUILD_DIR/android-sdk-linux/emulator/emulator \
+      -avd mozemulator-android33-x86_64 -skip-adb-auth -selinux permissive -memory 8192 -cores 4 -skin 1280x960 -writable-system -no-audio -no-window -no-boot-anim \
+      -qemu -enable-kvm -cpu host -smp cores=4 &
+    $ADB wait-for-device root
+    $ADB remount || true
+    $ADB reboot
+    $ADB wait-for-device root
+    $ADB remount
+    $ADB push /tmp/libhoudini/prebuilts/. /system/
+    $ADB 'echo "ro.product.cpu.abilist=x86_64,x86,arm64-v8a" >> /system/build.prop'
+    $ADB 'echo "ro.product.cpu.abilist64=x86_64,arm64-v8a" >> /system/build.prop'
+    $ADB 'echo "ro.dalvik.vm.native.bridge=libhoudini.so" >> /system/build.prop'
+    $ADB 'echo "ro.enable.native.bridge.exec64=1" >> /system/build.prop'
+    $ADB 'echo "ro.dalvik.vm.isa.arm64=x86_64" >> /system/build.prop'
+    $ADB reboot
+    $ADB wait-for-device emu kill
+    wait
+    rm -rf /tmp/libhoudini
 
     pushd $_MOZBUILD_DIR
       mkdir -p cache.real
