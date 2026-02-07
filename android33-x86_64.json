@@ -4,12 +4,14 @@
     "emulator_extra_args": [
         "-skip-adb-auth",
         "-selinux", "permissive",
-        "-memory", "8192",
+        "-memory", "4096",
         "-cores", "4",
         "-skin", "1280x960",
         "-no-audio",
         "-no-window",
         "-no-boot-anim",
+        "-writable-system",
+        "-no-snapstorage",
         "-qemu", "-enable-kvm", "-cpu", "host", "-smp", "cores=4"
     ],
     "emulator_extra_config": {

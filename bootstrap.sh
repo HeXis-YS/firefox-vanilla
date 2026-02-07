@@ -88,7 +88,17 @@ case $1 in
     ADB="$_MOZBUILD_DIR/android-sdk-linux/platform-tools/adb -s emulator-5554"
     git clone --depth 1 --single-branch --no-tags https://github.com/HeXis-YS/vendor_intel_proprietary_houdini /tmp/libhoudini
     ANDROID_EMULATOR_HOME=$_MOZBUILD_DIR/android-device $_MOZBUILD_DIR/android-sdk-linux/emulator/emulator \
-      -avd mozemulator-android33-x86_64 -skip-adb-auth -selinux permissive -memory 8192 -cores 4 -skin 1280x960 -writable-system -no-audio -no-window -no-boot-anim \
+      -avd mozemulator-android33-x86_64 \
+      -skip-adb-auth \
+      -selinux permissive \
+      -memory 4096 \
+      -cores 4 \
+      -skin 1280x960 \
+      -no-audio \
+      -no-window \
+      -no-boot-anim \
+      -writable-system \
+      -no-snapstorage \
       -qemu -enable-kvm -cpu host -smp cores=4 &
     $ADB wait-for-device root
     $ADB remount || true
