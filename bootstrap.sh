@@ -96,11 +96,11 @@ case $1 in
     $ADB wait-for-device root
     $ADB remount
     $ADB push /tmp/libhoudini/prebuilts/. /system/
-    $ADB 'echo "ro.product.cpu.abilist=x86_64,x86,arm64-v8a" >> /system/build.prop'
-    $ADB 'echo "ro.product.cpu.abilist64=x86_64,arm64-v8a" >> /system/build.prop'
-    $ADB 'echo "ro.dalvik.vm.native.bridge=libhoudini.so" >> /system/build.prop'
-    $ADB 'echo "ro.enable.native.bridge.exec64=1" >> /system/build.prop'
-    $ADB 'echo "ro.dalvik.vm.isa.arm64=x86_64" >> /system/build.prop'
+    $ADB shell 'echo "ro.product.cpu.abilist=x86_64,x86,arm64-v8a" >> /system/build.prop'
+    $ADB shell 'echo "ro.product.cpu.abilist64=x86_64,arm64-v8a" >> /system/build.prop'
+    $ADB shell 'echo "ro.dalvik.vm.native.bridge=libhoudini.so" >> /system/build.prop'
+    $ADB shell 'echo "ro.enable.native.bridge.exec64=1" >> /system/build.prop'
+    $ADB shell 'echo "ro.dalvik.vm.isa.arm64=x86_64" >> /system/build.prop'
     $ADB reboot
     $ADB wait-for-device emu kill
     wait
